@@ -5,6 +5,7 @@ import { validateEnv } from './utils/validateEnv';
 import authRoutes from './routes/auth';
 import voteRoutes from './routes/vote';
 import postRoutes from './routes/post';
+import commentRoutes from './routes/comment';
 
 // Load environment variables
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api', voteRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api', commentRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

@@ -217,3 +217,39 @@ export const getPostsQuerySchema = Joi.object({
       'string.base': 'Search query must be a string',
     }),
 });
+
+/**
+ * Create comment validation schema
+ * Requirements: 6.8, 6.9
+ */
+export const createCommentSchema = Joi.object({
+  content: Joi.string()
+    .min(1)
+    .max(10000)
+    .trim()
+    .required()
+    .messages({
+      'string.min': 'Comment content must be at least 1 character long',
+      'string.max': 'Comment content must not exceed 10000 characters',
+      'string.empty': 'Comment content cannot be empty',
+      'any.required': 'Comment content is required',
+    }),
+});
+
+/**
+ * Edit comment validation schema
+ * Requirements: 7.7
+ */
+export const editCommentSchema = Joi.object({
+  content: Joi.string()
+    .min(1)
+    .max(10000)
+    .trim()
+    .required()
+    .messages({
+      'string.min': 'Comment content must be at least 1 character long',
+      'string.max': 'Comment content must not exceed 10000 characters',
+      'string.empty': 'Comment content cannot be empty',
+      'any.required': 'Comment content is required',
+    }),
+});
