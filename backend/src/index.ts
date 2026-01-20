@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { validateEnv } from './utils/validateEnv';
 import authRoutes from './routes/auth';
 import voteRoutes from './routes/vote';
+import postRoutes from './routes/post';
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', voteRoutes);
+app.use('/api/posts', postRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

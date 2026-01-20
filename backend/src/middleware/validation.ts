@@ -6,7 +6,7 @@ import Joi from 'joi';
  * Creates middleware that validates request body against a Joi schema
  */
 export const validateRequest = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false, // Return all errors, not just the first one
       stripUnknown: true, // Remove unknown fields
@@ -18,11 +18,39 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
         message: detail.message,
       }));
 
-      return res.status(400).json({ errors });
+      res.status(400).json({ errors });
+      return;
     }
 
     // Replace req.body with validated and sanitized value
     req.body = value;
+    next();
+  };
+};
+
+/**
+ * Query validation middleware factory
+ * Creates middleware that validates request query parameters against a Joi schema
+ */
+export const validateQuery = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const { error, value } = schema.validate(req.query, {
+      abortEarly: false, // Return all errors, not just the first one
+      stripUnknown: true, // Remove unknown fields
+    });
+
+    if (error) {
+      const errors = error.details.map((detail) => ({
+        field: detail.path.join('.'),
+        message: detail.message,
+      }));
+
+      res.status(400).json({ errors });
+      return;
+    }
+
+    // Replace req.query with validated and sanitized value
+    req.query = value;
     next();
   };
 };
@@ -113,5 +141,79 @@ export const voteSchema = Joi.object({
     .messages({
       'any.only': 'Direction must be 1 (upvote) or -1 (downvote)',
       'any.required': 'Direction is required',
+    }),
+});
+
+/**
+ * Create post validation schema
+ * Requirements: 3.9
+ */
+export const createPostSchema = Joi.object({
+  title: Joi.string()
+    .min(1)
+    .max(300)
+    .trim()
+    .required()
+    .messages({
+      'string.min': 'Title must be at least 1 character long',
+      'string.max': 'Title must not exceed 300 characters',
+      'string.empty': 'Title cannot be empty',
+      'any.required': 'Title is required',
+    }),
+  url: Joi.string()
+    .uri()
+    .trim()
+    .optional()
+    .messages({
+      'string.uri': 'Please provide a valid URL',
+    }),
+  text: Joi.string()
+    .max(10000)
+    .trim()
+    .optional()
+    .messages({
+      'string.max': 'Text must not exceed 10000 characters',
+    }),
+}).xor('url', 'text') // Exactly one of url or text must be provided
+  .messages({
+    'object.xor': 'Post must have either url or text, but not both',
+  });
+
+/**
+ * Get posts query validation schema
+ * Requirements: 4.1
+ */
+export const getPostsQuerySchema = Joi.object({
+  page: Joi.number()
+    .integer()
+    .min(1)
+    .optional()
+    .messages({
+      'number.base': 'Page must be a number',
+      'number.integer': 'Page must be an integer',
+      'number.min': 'Page must be at least 1',
+    }),
+  limit: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .optional()
+    .messages({
+      'number.base': 'Limit must be a number',
+      'number.integer': 'Limit must be an integer',
+      'number.min': 'Limit must be at least 1',
+      'number.max': 'Limit must not exceed 100',
+    }),
+  sort: Joi.string()
+    .valid('new', 'top', 'best')
+    .optional()
+    .messages({
+      'any.only': 'Sort must be one of: new, top, best',
+    }),
+  q: Joi.string()
+    .trim()
+    .optional()
+    .messages({
+      'string.base': 'Search query must be a string',
     }),
 });
