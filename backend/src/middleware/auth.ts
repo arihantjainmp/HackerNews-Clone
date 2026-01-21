@@ -86,7 +86,7 @@ export function authenticateToken(
  */
 export function optionalAuthenticateToken(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void {
   // Extract Authorization header
@@ -126,3 +126,6 @@ export function optionalAuthenticateToken(
   
   next();
 }
+
+// Export authenticateToken as authenticate for convenience
+export { authenticateToken as authenticate };

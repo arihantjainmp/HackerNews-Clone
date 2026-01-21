@@ -10,3 +10,4 @@ export { default as CreatePost } from './CreatePost';
 export { default as PostDetail } from './PostDetail';
 export { default as User } from './User';
 export { default as NotFound } from './NotFound';
+export { default as Notifications } from './Notifications';

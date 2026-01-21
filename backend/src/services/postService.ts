@@ -240,18 +240,21 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
   // Transform posts to response format
   const postsResponse: IPostResponse[] = posts.map((post: any) => {
     const postId = post._id.toString();
+    const authorId = post.author_id;
+    const isPopulated = authorId && typeof authorId === 'object' && '_id' in authorId;
+    
     return {
       _id: postId,
       title: post.title,
       url: post.url,
       text: post.text,
       type: post.type,
-      author_id: post.author_id._id ? post.author_id._id.toString() : post.author_id.toString(),
-      author: post.author_id._id ? {
-        _id: post.author_id._id.toString(),
-        username: post.author_id.username,
-        email: post.author_id.email,
-        created_at: post.author_id.created_at
+      author_id: isPopulated ? authorId._id.toString() : authorId.toString(),
+      author: isPopulated ? {
+        _id: authorId._id.toString(),
+        username: authorId.username,
+        email: authorId.email,
+        created_at: authorId.created_at
       } : undefined,
       points: post.points,
       comment_count: post.comment_count,
@@ -311,18 +314,21 @@ export async function getPostById(postId: string, userId?: string): Promise<IPos
   }
 
   // Transform to response format
+  const authorId: any = post.author_id;
+  const isPopulated = authorId && typeof authorId === 'object' && '_id' in authorId;
+  
   return {
     _id: post._id.toString(),
     title: post.title,
     url: post.url,
     text: post.text,
     type: post.type,
-    author_id: post.author_id._id ? post.author_id._id.toString() : post.author_id.toString(),
-    author: post.author_id._id ? {
-      _id: post.author_id._id.toString(),
-      username: post.author_id.username,
-      email: post.author_id.email,
-      created_at: post.author_id.created_at
+    author_id: isPopulated ? authorId._id.toString() : authorId.toString(),
+    author: isPopulated ? {
+      _id: authorId._id.toString(),
+      username: authorId.username,
+      email: authorId.email,
+      created_at: authorId.created_at
     } : undefined,
     points: post.points,
     comment_count: post.comment_count,

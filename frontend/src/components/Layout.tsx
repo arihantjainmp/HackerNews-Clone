@@ -13,6 +13,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import NotificationBell from './NotificationBell';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -79,6 +80,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="text-white text-sm">Loading...</div>
               ) : isAuthenticated ? (
                 <>
+                  <NotificationBell />
                   <span className="text-white text-sm font-medium">
                     {user?.username || 'User'}
                   </span>
@@ -168,8 +170,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <div className="text-white text-sm px-2">Loading...</div>
                   ) : isAuthenticated ? (
                     <>
-                      <div className="text-white text-sm font-medium px-2 py-2">
-                        {user?.username || 'User'}
+                      <div className="flex items-center justify-between px-2 py-2">
+                        <div className="text-white text-sm font-medium">
+                          {user?.username || 'User'}
+                        </div>
+                        <NotificationBell />
                       </div>
                       <button
                         onClick={handleLogout}

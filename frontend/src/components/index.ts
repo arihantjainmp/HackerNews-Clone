@@ -9,3 +9,4 @@ export { PostList } from './PostList';
 export { CommentItem } from './CommentItem';
 export { CommentThread } from './CommentThread';
 export { CommentForm } from './CommentForm';
+export { default as NotificationBell } from './NotificationBell';

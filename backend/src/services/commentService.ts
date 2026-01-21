@@ -157,6 +157,15 @@ export async function createComment(data: {
   // Invalidate post list caches since comment_count changed
   cache.invalidateByPrefix('posts');
 
+  // Create notification for post author
+  try {
+    const { createPostCommentNotification } = await import('./notificationService');
+    await createPostCommentNotification(postId, comment._id.toString(), authorId);
+  } catch (error) {
+    // Log error but don't fail the comment creation
+    console.error('Failed to create notification:', error);
+  }
+
   return comment;
 }
 
@@ -229,6 +238,15 @@ export async function createReply(data: {
 
   // Invalidate post list caches since comment_count changed
   cache.invalidateByPrefix('posts');
+
+  // Create notification for parent comment author
+  try {
+    const { createCommentReplyNotification } = await import('./notificationService');
+    await createCommentReplyNotification(parentId, reply._id.toString(), postId, authorId);
+  } catch (error) {
+    // Log error but don't fail the reply creation
+    console.error('Failed to create notification:', error);
+  }
 
   return reply;
 }

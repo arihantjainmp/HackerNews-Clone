@@ -307,9 +307,15 @@ export const PostDetail: React.FC = () => {
 
           {/* Text Content for Text Posts */}
           {post.type === 'text' && post.text && (
-            <div className="px-3 sm:px-4 pb-4">
-              <div className="prose max-w-none text-sm sm:text-base text-gray-700 whitespace-pre-wrap break-words">
-                {post.text}
+            <div className="flex gap-2 sm:gap-3 px-3 sm:px-4 pb-4">
+              {/* Spacer to align with vote controls */}
+              <div className="min-w-[44px] sm:min-w-[48px]"></div>
+              
+              {/* Text content aligned with post title */}
+              <div className="flex-1 min-w-0">
+                <div className="prose max-w-none text-sm sm:text-base text-gray-700 whitespace-pre-wrap break-words">
+                  {post.text}
+                </div>
               </div>
             </div>
           )}

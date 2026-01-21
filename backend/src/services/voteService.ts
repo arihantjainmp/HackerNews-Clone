@@ -41,7 +41,7 @@ export async function handleVote(
   });
 
   let pointsDelta = 0;
-  let finalUserVote = newDirection;
+  let finalUserVote: 1 | -1 | 0 = newDirection;
 
   if (!existingVote) {
     // State transition: NO_VOTE → UPVOTE or NO_VOTE → DOWNVOTE
@@ -58,7 +58,7 @@ export async function handleVote(
     // State transition: UPVOTE → UPVOTE or DOWNVOTE → DOWNVOTE
     // Toggle off - remove the vote
     pointsDelta = -newDirection;
-    finalUserVote = 0;
+    finalUserVote = 0 as const;
     
     // Delete the vote record
     await Vote.deleteOne({ _id: existingVote._id });

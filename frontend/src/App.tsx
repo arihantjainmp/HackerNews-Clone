@@ -11,6 +11,7 @@ const CreatePost = lazy(() => import('./pages/CreatePost'));
 const PostDetail = lazy(() => import('./pages/PostDetail'));
 const User = lazy(() => import('./pages/User'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Notifications = lazy(() => import('./pages/Notifications'));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -40,6 +41,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreatePost />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />

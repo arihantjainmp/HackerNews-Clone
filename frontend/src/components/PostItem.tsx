@@ -66,7 +66,7 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
 
     // Calculate optimistic update
     let pointsDelta = 0;
-    let newUserVote = direction;
+    let newUserVote: 1 | -1 | 0 = direction;
 
     if (previousUserVote === 0) {
       // No vote → upvote or downvote
@@ -74,7 +74,7 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
     } else if (previousUserVote === direction) {
       // Same vote → toggle off (remove vote)
       pointsDelta = -direction;
-      newUserVote = 0;
+      newUserVote = 0 as const;
     } else {
       // Opposite vote → change by 2
       pointsDelta = direction - previousUserVote;

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../services/userApi';
 import { formatTimeAgo } from '../utils/timeAgo';
 import type { UserProfile, Post, Comment } from '../types';

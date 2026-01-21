@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PostDetail } from '../PostDetail';
 import * as postApi from '../../services/postApi';
 import type { Post, CommentNode, User } from '../../types';
