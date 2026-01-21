@@ -214,7 +214,17 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
         {/* Metadata */}
         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs text-gray-600">
           <span>
-            by <span className="font-medium">{post.author?.username || 'unknown'}</span>
+            by{' '}
+            <a
+              href={`/users/${post.author?.username}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/users/${post.author?.username}`);
+              }}
+              className="font-medium hover:text-orange-600 transition-colors"
+            >
+              {post.author?.username || 'unknown'}
+            </a>
           </span>
           <span className="hidden sm:inline">•</span>
           <span>{formatTimeAgo(post.created_at)}</span>

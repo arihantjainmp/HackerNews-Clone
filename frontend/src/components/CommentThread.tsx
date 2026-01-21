@@ -11,11 +11,12 @@
  * - Handle deeply nested comments gracefully
  * - Implement "Load more replies" for deeply nested comments (Requirement 22.2)
  * - Add pagination for large comment trees (Requirement 22.2)
+ * - Auto-expand and scroll to focused comment
  *
  * Requirements: 10.1, 10.2, 22.2
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
 import type { CommentNode, Comment } from '../types';
@@ -103,6 +104,21 @@ interface CommentThreadProps {
    * Callback when reply is cancelled
    */
   onReplyCancel?: () => void;
+
+  /**
+   * ID of comment to focus on (auto-expand and scroll to)
+   */
+  focusedCommentId?: string | null;
+
+  /**
+   * ID of comment to highlight
+   */
+  highlightedCommentId?: string | null;
+
+  /**
+   * Post ID for generating permalinks
+   */
+  postId?: string;
 }
 
 // ============================================================================
@@ -137,6 +153,9 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   replyingTo = null,
   onReplyCreated,
   onReplyCancel,
+  focusedCommentId,
+  highlightedCommentId,
+  postId,
 }) => {
   // State for pagination at this level
   const [visibleCount, setVisibleCount] = useState(
@@ -145,6 +164,49 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
   // State for collapsed deep threads
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+
+  /**
+   * Check if a comment or any of its descendants contains the focused comment
+   */
+  const containsFocusedComment = (node: CommentNode, targetId: string): boolean => {
+    if (node.comment._id === targetId) {
+      return true;
+    }
+    if (node.replies && node.replies.length > 0) {
+      return node.replies.some(reply => containsFocusedComment(reply, targetId));
+    }
+    return false;
+  };
+
+  /**
+   * Auto-expand threads and pagination to show focused comment
+   */
+  useEffect(() => {
+    if (focusedCommentId) {
+      // Check if focused comment is in this level's comments
+      const focusedIndex = comments.findIndex(node => 
+        containsFocusedComment(node, focusedCommentId)
+      );
+
+      if (focusedIndex !== -1) {
+        // Expand pagination to show the focused comment
+        if (focusedIndex >= visibleCount) {
+          setVisibleCount(focusedIndex + 1);
+        }
+
+        // Auto-expand the thread containing the focused comment
+        const focusedNode = comments[focusedIndex];
+        if (focusedNode && containsFocusedComment(focusedNode, focusedCommentId) && 
+            focusedNode.comment._id !== focusedCommentId) {
+          setExpandedThreads(prev => {
+            const newSet = new Set(prev);
+            newSet.add(focusedNode.comment._id);
+            return newSet;
+          });
+        }
+      }
+    }
+  }, [focusedCommentId, comments, visibleCount]);
 
   // Handle empty comment array
   if (!comments || comments.length === 0) {
@@ -194,6 +256,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
               onEdit={onEdit}
               onDelete={onDelete}
               onVoteUpdate={onVoteUpdate}
+              isHighlighted={highlightedCommentId === node.comment._id}
+              postId={postId}
             />
 
             {/* Reply form if this comment is being replied to */}
@@ -236,6 +300,9 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                 replyingTo={replyingTo}
                 onReplyCreated={onReplyCreated}
                 onReplyCancel={onReplyCancel}
+                focusedCommentId={focusedCommentId}
+                highlightedCommentId={highlightedCommentId}
+                postId={postId}
               />
             ) : null}
           </div>

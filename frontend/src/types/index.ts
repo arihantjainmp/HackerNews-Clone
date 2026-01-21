@@ -403,3 +403,16 @@ export type AsyncResult<T> = {
   error: string | null;
   isLoading: boolean;
 };
+
+/**
+ * User profile with activities
+ */
+export interface UserProfile {
+  user: User;
+  posts: Post[];
+  comments: Comment[];
+  totalPosts: number;
+  totalComments: number;
+  page: number;
+  totalPages: number;
+}

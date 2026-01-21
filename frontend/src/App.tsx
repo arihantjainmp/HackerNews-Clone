@@ -9,6 +9,7 @@ const Signup = lazy(() => import('./pages/Signup'));
 const Home = lazy(() => import('./pages/Home'));
 const CreatePost = lazy(() => import('./pages/CreatePost'));
 const PostDetail = lazy(() => import('./pages/PostDetail'));
+const User = lazy(() => import('./pages/User'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Loading fallback component
@@ -33,6 +34,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/posts/:id" element={<PostDetail />} />
+            <Route path="/users/:username" element={<User />} />
             <Route
               path="/submit"
               element={

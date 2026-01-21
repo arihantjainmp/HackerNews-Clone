@@ -8,4 +8,5 @@ export { default as Signup } from './Signup';
 export { default as Home } from './Home';
 export { default as CreatePost } from './CreatePost';
 export { default as PostDetail } from './PostDetail';
+export { default as User } from './User';
 export { default as NotFound } from './NotFound';

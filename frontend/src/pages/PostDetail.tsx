@@ -9,12 +9,26 @@
  * - Display comment tree using CommentThread
  * - Show CommentForm for adding top-level comments
  * - Handle loading and error states
+ * - Focus on specific comment via URL parameter (commentId)
+ *
+ * URL Parameters:
+ * - id: Post ID (required, from route params)
+ * - commentId: Comment ID to focus on (optional, from query params)
+ *
+ * Example Usage:
+ * - View post: /posts/123
+ * - View post with focused comment: /posts/123?commentId=456
+ *
+ * When commentId is provided:
+ * - Auto-expands comment threads to show the target comment
+ * - Scrolls to the comment
+ * - Highlights the comment with a yellow background for 3 seconds
  *
  * Requirements: 4.10, 10.1
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getPostById } from '../services/postApi';
 import { PostItem, CommentThread, CommentForm } from '../components';
 import { useAuth } from '../contexts/AuthContext';
@@ -34,6 +48,9 @@ export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const commentId = searchParams.get('commentId');
+  const scrollAttemptedRef = useRef(false);
 
   // State
   const [post, setPost] = useState<Post | null>(null);
@@ -42,6 +59,7 @@ export const PostDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(commentId);
 
   /**
    * Fetch post and comment tree from API
@@ -91,6 +109,28 @@ export const PostDetail: React.FC = () => {
   useEffect(() => {
     fetchPostData();
   }, [fetchPostData]);
+
+  /**
+   * Scroll to and highlight the target comment after data loads
+   */
+  useEffect(() => {
+    if (commentId && !isLoading && comments.length > 0 && !scrollAttemptedRef.current) {
+      scrollAttemptedRef.current = true;
+      
+      // Wait for DOM to update
+      setTimeout(() => {
+        const element = document.getElementById(`comment-${commentId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Remove highlight after 3 seconds
+          setTimeout(() => {
+            setHighlightedCommentId(null);
+          }, 3000);
+        }
+      }, 100);
+    }
+  }, [commentId, isLoading, comments]);
 
   /**
    * Handle new comment creation
@@ -315,6 +355,9 @@ export const PostDetail: React.FC = () => {
               replyingTo={replyingTo}
               onReplyCreated={handleReplyCreated}
               onReplyCancel={handleReplyCancel}
+              focusedCommentId={commentId}
+              highlightedCommentId={highlightedCommentId}
+              postId={id}
             />
           ) : (
             <p className="text-sm sm:text-base text-gray-500 text-center py-8">

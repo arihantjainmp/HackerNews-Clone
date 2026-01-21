@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import voteRoutes from './routes/vote';
 import postRoutes from './routes/post';
 import commentRoutes from './routes/comment';
+import userRoutes from './routes/userRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', voteRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api', commentRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

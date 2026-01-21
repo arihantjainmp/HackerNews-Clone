@@ -15,6 +15,7 @@
  */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { voteOnComment, editComment, deleteComment } from '../services/commentApi';
 import { formatTimeAgo } from '../utils/timeAgo';
@@ -31,6 +32,8 @@ interface CommentItemProps {
   onEdit?: (commentId: string, newContent: string) => void;
   onDelete?: (commentId: string) => void;
   onVoteUpdate?: (commentId: string, newPoints: number, newUserVote: number) => void;
+  isHighlighted?: boolean;
+  postId?: string; // Post ID for generating permalink
 }
 
 // ============================================================================
@@ -44,8 +47,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onEdit,
   onDelete,
   onVoteUpdate,
+  isHighlighted = false,
+  postId,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Local state for optimistic updates
   const [localPoints, setLocalPoints] = useState(comment.points);
@@ -155,6 +161,25 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   /**
+   * Handle permalink button click - copy link to clipboard
+   */
+  const handlePermalinkClick = async () => {
+    if (!postId) return;
+    
+    const url = `${window.location.origin}/posts/${postId}?commentId=${comment._id}`;
+    
+    try {
+      await navigator.clipboard.writeText(url);
+      // Show temporary success message
+      setError(null);
+      // You could add a toast notification here
+    } catch (err) {
+      setError('Failed to copy link');
+      console.error('Failed to copy permalink:', err);
+    }
+  };
+
+  /**
    * Handle edit button click
    *
    * Requirement 10.7: Add "edit" button for own comments
@@ -260,7 +285,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // ============================================================================
 
   return (
-    <div className="flex gap-2 sm:gap-3 py-2">
+    <div 
+      id={`comment-${comment._id}`}
+      className={`flex gap-2 sm:gap-3 py-2 transition-colors ${
+        isHighlighted ? 'bg-yellow-50 border-l-4 border-yellow-400 pl-2' : ''
+      }`}
+    >
       {/* Vote Controls */}
       <div className="flex flex-col items-center gap-1 min-w-[44px] sm:min-w-[36px]">
         {/* Upvote Button - Requirement 21.5: Touch targets at least 44x44px on mobile */}
@@ -313,9 +343,21 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       <div className="flex-1 min-w-0">
         {/* Metadata */}
         <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
-          <span className="font-medium">
-            {localIsDeleted ? '[deleted]' : comment.author?.username || 'unknown'}
-          </span>
+          {localIsDeleted ? (
+            <span className="font-medium">[deleted]</span>
+          ) : (
+            <a
+              href={`/users/${comment.author?.username}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/users/${comment.author?.username}`);
+              }}
+              className="font-medium hover:text-orange-600 transition-colors"
+            >
+              {comment.author?.username || 'unknown'}
+            </a>
+          )}
           <span>•</span>
           <span>{formatTimeAgo(comment.created_at)}</span>
           {comment.edited_at && !localIsDeleted && (
@@ -400,6 +442,17 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
               >
                 {isDeleting ? 'deleting...' : 'delete'}
+              </button>
+            )}
+
+            {/* Permalink Button - Copy link to this comment */}
+            {postId && (
+              <button
+                onClick={handlePermalinkClick}
+                className="text-gray-600 hover:text-orange-600 transition-colors min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
+                title="Copy link to comment"
+              >
+                permalink
               </button>
             )}
           </div>
