@@ -3,9 +3,7 @@ import {
   register,
   login,
   refreshAccessToken,
-  logout,
-  ValidationError,
-  AuthenticationError
+  logout
 } from '../services/authService';
 import {
   validateRequest,
@@ -14,6 +12,7 @@ import {
   refreshTokenSchema,
   logoutSchema
 } from '../middleware/validation';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -33,27 +32,17 @@ const router = Router();
  * 
  * Requirements: 1.9
  */
-router.post('/signup', validateRequest(signupSchema), async (req: Request, res: Response) => {
-  try {
-    const { username, email, password } = req.body;
+router.post('/signup', validateRequest(signupSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { username, email, password } = req.body;
 
-    // Register user (includes password strength validation)
-    const user = await register(username, email, password);
+  // Register user (includes password strength validation)
+  await register(username, email, password);
 
-    // Automatically log in the user after registration
-    const loginResult = await login(email, password);
+  // Automatically log in the user after registration
+  const loginResult = await login(email, password);
 
-    res.status(201).json(loginResult);
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      // Handle duplicate username/email or weak password
-      res.status(400).json({ error: error.message });
-    } else {
-      console.error('Signup error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+  res.status(201).json(loginResult);
+}));
 
 /**
  * POST /api/auth/login
@@ -70,23 +59,14 @@ router.post('/signup', validateRequest(signupSchema), async (req: Request, res: 
  * 
  * Requirements: 1.10
  */
-router.post('/login', validateRequest(loginSchema), async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
+router.post('/login', validateRequest(loginSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
 
-    // Authenticate user and generate tokens
-    const result = await login(email, password);
+  // Authenticate user and generate tokens
+  const result = await login(email, password);
 
-    res.status(200).json(result);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      res.status(401).json({ error: error.message });
-    } else {
-      console.error('Login error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+  res.status(200).json(result);
+}));
 
 /**
  * POST /api/auth/refresh
@@ -103,23 +83,14 @@ router.post('/login', validateRequest(loginSchema), async (req: Request, res: Re
  * 
  * Requirements: 2.6
  */
-router.post('/refresh', validateRequest(refreshTokenSchema), async (req: Request, res: Response) => {
-  try {
-    const { refreshToken } = req.body;
+router.post('/refresh', validateRequest(refreshTokenSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
 
-    // Generate new tokens (token rotation)
-    const result = await refreshAccessToken(refreshToken);
+  // Generate new tokens (token rotation)
+  const result = await refreshAccessToken(refreshToken);
 
-    res.status(200).json(result);
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      res.status(401).json({ error: error.message });
-    } else {
-      console.error('Token refresh error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+  res.status(200).json(result);
+}));
 
 /**
  * POST /api/auth/logout
@@ -135,22 +106,13 @@ router.post('/refresh', validateRequest(refreshTokenSchema), async (req: Request
  * 
  * Requirements: 1.11
  */
-router.post('/logout', validateRequest(logoutSchema), async (req: Request, res: Response) => {
-  try {
-    const { refreshToken } = req.body;
+router.post('/logout', validateRequest(logoutSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
 
-    // Invalidate refresh token
-    await logout(refreshToken);
+  // Invalidate refresh token
+  await logout(refreshToken);
 
-    res.status(200).json({ message: 'Logged out successfully' });
-  } catch (error) {
-    if (error instanceof AuthenticationError) {
-      res.status(401).json({ error: error.message });
-    } else {
-      console.error('Logout error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+  res.status(200).json({ message: 'Logged out successfully' });
+}));
 
 export default router;

@@ -1,31 +1,12 @@
 import { Post, IPost } from '../models/Post';
 import { Types } from 'mongoose';
 import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
+import { ValidationError, NotFoundError } from '../utils/errors';
 
 /**
  * Post Service
  * Handles post creation, retrieval, sorting, and search functionality
  */
-
-/**
- * Custom error for validation failures
- */
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
-
-/**
- * Custom error for not found resources
- */
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
 
 /**
  * Post creation data interface
@@ -184,13 +165,13 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
       .exec();
     
     // Sort by best score
-    const sortedPosts = sortByBest(allPosts as IPost[]);
+    const sortedPosts = sortByBest(allPosts as any[]);
     
     // Apply pagination after sorting
     posts = sortedPosts.slice(skip, skip + limit);
   } else {
     // For "new" and "top", use database sorting
-    const sortField = sort === 'top' ? { points: -1 } : { created_at: -1 };
+    const sortField: Record<string, -1> = sort === 'top' ? { points: -1 } : { created_at: -1 };
     
     posts = await Post.find(filter)
       .populate('author_id', 'username email created_at')

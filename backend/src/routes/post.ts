@@ -2,9 +2,7 @@ import { Router, Request, Response } from 'express';
 import {
   getPosts,
   getPostById,
-  createPost,
-  ValidationError,
-  NotFoundError
+  createPost
 } from '../services/postService';
 import { authenticateToken } from '../middleware/auth';
 import {
@@ -13,6 +11,7 @@ import {
   createPostSchema,
   getPostsQuerySchema
 } from '../middleware/validation';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -32,27 +31,22 @@ const router = Router();
  * 
  * Requirements: 4.1
  */
-router.get('/', validateQuery(getPostsQuerySchema), async (req: Request, res: Response) => {
-  try {
-    const { page, limit, sort, q } = req.query;
+router.get('/', validateQuery(getPostsQuerySchema), asyncHandler(async (req: Request, res: Response) => {
+  const { page, limit, sort, q } = req.query;
 
-    // Convert query parameters to appropriate types
-    const options = {
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-      sort: sort as 'new' | 'top' | 'best' | undefined,
-      search: q as string | undefined
-    };
+  // Convert query parameters to appropriate types
+  const options = {
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined,
+    sort: sort as 'new' | 'top' | 'best' | undefined,
+    search: q as string | undefined
+  };
 
-    // Get posts with pagination, sorting, and search
-    const result = await getPosts(options);
+  // Get posts with pagination, sorting, and search
+  const result = await getPosts(options);
 
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Get posts error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  res.status(200).json(result);
+}));
 
 /**
  * POST /api/posts
@@ -76,29 +70,20 @@ router.post(
   '/',
   authenticateToken,
   validateRequest(createPostSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { title, url, text } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { title, url, text } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Create post
-      const post = await createPost({
-        title,
-        url,
-        text,
-        authorId: userId
-      });
+    // Create post
+    const post = await createPost({
+      title,
+      url,
+      text,
+      authorId: userId
+    });
 
-      res.status(201).json({ post });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ error: error.message });
-      } else {
-        console.error('Create post error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(201).json({ post });
+  })
 );
 
 /**
@@ -114,22 +99,13 @@ router.post(
  * 
  * Requirements: 4.10
  */
-router.get('/:id', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-    // Get post by ID
-    const post = await getPostById(id);
+  // Get post by ID
+  const post = await getPostById(id!);
 
-    res.status(200).json({ post });
-  } catch (error) {
-    if (error instanceof NotFoundError) {
-      res.status(404).json({ error: error.message });
-    } else {
-      console.error('Get post by ID error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-});
+  res.status(200).json({ post });
+}));
 
 export default router;

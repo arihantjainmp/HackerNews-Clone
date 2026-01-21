@@ -50,6 +50,12 @@ export function authenticateToken(
 
   const token = parts[1];
 
+  // Check if token is empty
+  if (!token) {
+    res.status(401).json({ error: 'Token is required' });
+    return;
+  }
+
   // Verify token and extract userId
   try {
     const payload = verifyAccessToken(token);

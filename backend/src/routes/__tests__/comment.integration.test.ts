@@ -9,6 +9,7 @@ import { User } from '../../models/User';
 import { Post } from '../../models/Post';
 import { Comment } from '../../models/Comment';
 import { RefreshToken } from '../../models/RefreshToken';
+import { errorHandler } from '../../middleware/errorHandler';
 
 /**
  * Comment Endpoints Integration Tests
@@ -43,6 +44,7 @@ describe('Comment Endpoints Integration Tests', () => {
     app.use(express.json());
     app.use('/api/auth', authRoutes);
     app.use('/api', commentRoutes);
+    app.use(errorHandler);
   });
 
   afterAll(async () => {

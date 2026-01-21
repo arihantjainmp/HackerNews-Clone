@@ -8,6 +8,7 @@ import postRoutes from '../post';
 import { User } from '../../models/User';
 import { Post } from '../../models/Post';
 import { RefreshToken } from '../../models/RefreshToken';
+import { errorHandler } from '../../middleware/errorHandler';
 
 let mongoServer: MongoMemoryServer;
 let app: Application;
@@ -27,6 +28,7 @@ beforeAll(async () => {
   app.use(express.json());
   app.use('/api/auth', authRoutes);
   app.use('/api/posts', postRoutes);
+  app.use(errorHandler);
 });
 
 afterAll(async () => {

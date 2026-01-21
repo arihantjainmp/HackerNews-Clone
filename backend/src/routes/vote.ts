@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { voteOnPost, voteOnComment } from '../services/voteService';
 import { authenticateToken } from '../middleware/auth';
 import { validateRequest, voteSchema } from '../middleware/validation';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -28,25 +29,16 @@ router.post(
   '/posts/:id/vote',
   authenticateToken,
   validateRequest(voteSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { id: postId } = req.params;
-      const { direction } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id: postId } = req.params;
+    const { direction } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Vote on the post
-      const result = await voteOnPost(userId, postId, direction);
+    // Vote on the post
+    const result = await voteOnPost(userId, postId!, direction);
 
-      res.status(200).json(result);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('not found')) {
-        res.status(404).json({ error: 'Post not found' });
-      } else {
-        console.error('Vote on post error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(200).json(result);
+  })
 );
 
 /**
@@ -72,25 +64,16 @@ router.post(
   '/comments/:id/vote',
   authenticateToken,
   validateRequest(voteSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { id: commentId } = req.params;
-      const { direction } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id: commentId } = req.params;
+    const { direction } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Vote on the comment
-      const result = await voteOnComment(userId, commentId, direction);
+    // Vote on the comment
+    const result = await voteOnComment(userId, commentId!, direction);
 
-      res.status(200).json(result);
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('not found')) {
-        res.status(404).json({ error: 'Comment not found' });
-      } else {
-        console.error('Vote on comment error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(200).json(result);
+  })
 );
 
 export default router;

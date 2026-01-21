@@ -10,6 +10,7 @@ import { Post } from '../../models/Post';
 import { Comment } from '../../models/Comment';
 import { Vote } from '../../models/Vote';
 import { RefreshToken } from '../../models/RefreshToken';
+import { errorHandler } from '../../middleware/errorHandler';
 
 let mongoServer: MongoMemoryServer;
 let app: Application;
@@ -29,6 +30,7 @@ beforeAll(async () => {
   app.use(express.json());
   app.use('/api/auth', authRoutes);
   app.use('/api', voteRoutes);
+  app.use(errorHandler);
 });
 
 afterAll(async () => {

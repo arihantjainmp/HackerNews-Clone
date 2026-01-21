@@ -154,7 +154,7 @@ describe('handleVote - Post Voting', () => {
 
     await expect(
       handleVote(testUserId, fakePostId, 'post', 1)
-    ).rejects.toThrow('post not found');
+    ).rejects.toThrow('Post not found');
   });
 });
 

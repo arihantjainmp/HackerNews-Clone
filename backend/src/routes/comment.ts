@@ -3,10 +3,7 @@ import {
   createComment,
   createReply,
   editComment,
-  deleteComment,
-  ValidationError,
-  NotFoundError,
-  ForbiddenError
+  deleteComment
 } from '../services/commentService';
 import { authenticateToken } from '../middleware/auth';
 import {
@@ -14,6 +11,7 @@ import {
   createCommentSchema,
   editCommentSchema
 } from '../middleware/validation';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -40,31 +38,20 @@ router.post(
   '/posts/:postId/comments',
   authenticateToken,
   validateRequest(createCommentSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { postId } = req.params;
-      const { content } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { postId } = req.params;
+    const { content } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Create top-level comment
-      const comment = await createComment({
-        content,
-        postId,
-        authorId: userId
-      });
+    // Create top-level comment
+    const comment = await createComment({
+      content,
+      postId: postId!,
+      authorId: userId
+    });
 
-      res.status(201).json({ comment });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ error: error.message });
-      } else if (error instanceof NotFoundError) {
-        res.status(404).json({ error: error.message });
-      } else {
-        console.error('Create comment error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(201).json({ comment });
+  })
 );
 
 /**
@@ -90,40 +77,30 @@ router.post(
   '/comments/:commentId/replies',
   authenticateToken,
   validateRequest(createCommentSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { commentId } = req.params;
-      const { content } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // We need to get the parent comment to find the post_id
-      const { Comment } = await import('../models/Comment');
-      const parentComment = await Comment.findById(commentId);
-      
-      if (!parentComment) {
-        return res.status(404).json({ error: 'Parent comment not found' });
-      }
-
-      // Create reply
-      const reply = await createReply({
-        content,
-        parentId: commentId,
-        postId: parentComment.post_id.toString(),
-        authorId: userId
-      });
-
-      res.status(201).json({ comment: reply });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ error: error.message });
-      } else if (error instanceof NotFoundError) {
-        res.status(404).json({ error: error.message });
-      } else {
-        console.error('Create reply error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
+    // We need to get the parent comment to find the post_id
+    const { Comment } = await import('../models/Comment');
+    const parentComment = await Comment.findById(commentId);
+    
+    if (!parentComment) {
+      res.status(404).json({ error: 'Parent comment not found' });
+      return;
     }
-  }
+
+    // Create reply
+    const reply = await createReply({
+      content,
+      parentId: commentId!,
+      postId: parentComment.post_id.toString(),
+      authorId: userId
+    });
+
+    res.status(201).json({ comment: reply });
+  })
 );
 
 /**
@@ -150,29 +127,16 @@ router.put(
   '/comments/:id',
   authenticateToken,
   validateRequest(editCommentSchema),
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { content } = req.body;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Edit comment
-      const comment = await editComment(id, content, userId);
+    // Edit comment
+    const comment = await editComment(id!, content, userId);
 
-      res.status(200).json({ comment });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ error: error.message });
-      } else if (error instanceof NotFoundError) {
-        res.status(404).json({ error: error.message });
-      } else if (error instanceof ForbiddenError) {
-        res.status(403).json({ error: error.message });
-      } else {
-        console.error('Edit comment error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(200).json({ comment });
+  })
 );
 
 /**
@@ -194,28 +158,15 @@ router.put(
 router.delete(
   '/comments/:id',
   authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const userId = req.userId!; // Guaranteed by authenticateToken middleware
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const userId = req.userId!; // Guaranteed by authenticateToken middleware
 
-      // Delete comment
-      await deleteComment(id, userId);
+    // Delete comment
+    await deleteComment(id!, userId);
 
-      res.status(200).json({ message: 'Comment deleted successfully' });
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        res.status(400).json({ error: error.message });
-      } else if (error instanceof NotFoundError) {
-        res.status(404).json({ error: error.message });
-      } else if (error instanceof ForbiddenError) {
-        res.status(403).json({ error: error.message });
-      } else {
-        console.error('Delete comment error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
-  }
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  })
 );
 
 export default router;

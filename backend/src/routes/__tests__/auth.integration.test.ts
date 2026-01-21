@@ -7,6 +7,7 @@ import authRoutes from '../auth';
 import { User } from '../../models/User';
 import { RefreshToken } from '../../models/RefreshToken';
 import { verifyAccessToken } from '../../utils/jwt';
+import { errorHandler } from '../../middleware/errorHandler';
 
 let mongoServer: MongoMemoryServer;
 let app: Application;
@@ -25,6 +26,7 @@ beforeAll(async () => {
   app = express();
   app.use(express.json());
   app.use('/api/auth', authRoutes);
+  app.use(errorHandler);
 });
 
 afterAll(async () => {

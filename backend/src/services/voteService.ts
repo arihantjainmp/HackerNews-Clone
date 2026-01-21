@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
 import { Vote } from '../models/Vote';
 import { Post } from '../models/Post';
 import { Comment } from '../models/Comment';
+import { NotFoundError } from '../utils/errors';
 
 /**
  * Vote Service
@@ -56,10 +56,10 @@ export async function handleVote(
     // State transition: UPVOTE → UPVOTE or DOWNVOTE → DOWNVOTE
     // Idempotent operation - no change needed
     const Model = targetType === 'post' ? Post : Comment;
-    const target = await Model.findById(targetId);
+    const target = await (Model as any).findById(targetId);
     
     if (!target) {
-      throw new Error(`${targetType} not found`);
+      throw new NotFoundError(`${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`);
     }
     
     return {
@@ -81,14 +81,14 @@ export async function handleVote(
   // Atomically update points on target using $inc operator
   // This prevents race conditions from concurrent votes
   const Model = targetType === 'post' ? Post : Comment;
-  const updatedTarget = await Model.findByIdAndUpdate(
+  const updatedTarget = await (Model as any).findByIdAndUpdate(
     targetId,
     { $inc: { points: pointsDelta } },
     { new: true }
   );
 
   if (!updatedTarget) {
-    throw new Error(`${targetType} not found`);
+    throw new NotFoundError(`${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`);
   }
 
   return {

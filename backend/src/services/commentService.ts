@@ -1,43 +1,13 @@
 import { Comment, IComment } from '../models/Comment';
 import { Post } from '../models/Post';
 import { Types } from 'mongoose';
-import mongoose from 'mongoose';
 import { sanitizeText } from '../utils/sanitize';
+import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors';
 
 /**
  * Comment Service
  * Handles comment creation, editing, deletion, and tree building
  */
-
-/**
- * Custom error for validation failures
- */
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
-
-/**
- * Custom error for not found resources
- */
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
-
-/**
- * Custom error for forbidden actions
- */
-export class ForbiddenError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ForbiddenError';
-  }
-}
 
 /**
  * Comment node interface for tree structure

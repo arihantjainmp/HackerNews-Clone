@@ -1,7 +1,8 @@
-import { User, IUser } from '../models/User';
+import { User } from '../models/User';
 import { RefreshToken } from '../models/RefreshToken';
 import { hashPassword, validatePasswordStrength, comparePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, TokenPayload } from '../utils/jwt';
+import { ValidationError, AuthenticationError } from '../utils/errors';
 
 /**
  * User data returned from registration (without password_hash)
@@ -20,26 +21,6 @@ export interface ILoginResponse {
   user: IUserResponse;
   accessToken: string;
   refreshToken: string;
-}
-
-/**
- * Custom error for validation failures
- */
-export class ValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
-
-/**
- * Custom error for authentication failures
- */
-export class AuthenticationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'AuthenticationError';
-  }
 }
 
 /**

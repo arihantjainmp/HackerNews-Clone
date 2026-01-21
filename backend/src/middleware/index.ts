@@ -15,3 +15,6 @@ export {
   createCommentSchema,
   editCommentSchema,
 } from './validation';
+export { errorHandler, asyncHandler } from './errorHandler';
+export { rateLimiter } from './rateLimit';
+export { corsMiddleware } from './cors';
