@@ -196,20 +196,20 @@ export const PostList: React.FC<PostListProps> = ({ sort = 'new', searchQuery = 
         ))}
       </div>
 
-      {/* Load More Button */}
+      {/* Load More Button - Requirement 21.5: Touch targets at least 44x44px */}
       {page < totalPages && (
-        <div className="flex justify-center py-6 border-t border-gray-200">
+        <div className="flex justify-center py-4 sm:py-6 border-t border-gray-200">
           <button
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-colors min-h-[44px] ${
               isLoadingMore
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-orange-500 text-white hover:bg-orange-600'
             }`}
           >
             {isLoadingMore ? (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                 Loading...
               </span>

@@ -31,6 +31,14 @@ export const Home: React.FC = () => {
   const [searchInput, setSearchInput] = useState(initialSearch);
 
   /**
+   * Set page title
+   * Requirement 17.3: Set page title
+   */
+  useEffect(() => {
+    document.title = 'Hacker News Clone';
+  }, []);
+
+  /**
    * Update URL query parameters when sort or search changes
    * Requirement 9.7, 9.8: Update URL query parameters when sorting/searching
    */
@@ -94,28 +102,28 @@ export const Home: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-orange-500 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-white font-bold text-xl">Hacker News Clone</h1>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <h1 className="text-white font-bold text-base sm:text-xl">Hacker News Clone</h1>
             </div>
 
-            {/* Auth Status */}
-            <div className="flex items-center gap-4">
+            {/* Auth Status - Responsive */}
+            <div className="flex items-center gap-2 sm:gap-4">
               {isAuthenticated ? (
                 <>
-                  <span className="text-white text-sm">
+                  <span className="text-white text-xs sm:text-sm hidden md:inline">
                     Welcome, <span className="font-semibold">{user?.username}</span>
                   </span>
                   <button
                     onClick={() => navigate('/submit')}
-                    className="px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-sm font-medium"
+                    className="px-2 sm:px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
                   >
-                    Submit Post
+                    Submit
                   </button>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-sm font-medium"
+                    className="px-2 sm:px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
                   >
                     Logout
                   </button>
@@ -124,13 +132,13 @@ export const Home: React.FC = () => {
                 <>
                   <button
                     onClick={() => navigate('/login')}
-                    className="px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-sm font-medium"
+                    className="px-2 sm:px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => navigate('/signup')}
-                    className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-sm font-medium"
+                    className="px-2 sm:px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
                   >
                     Sign Up
                   </button>
@@ -141,18 +149,18 @@ export const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      {/* Main Content - Requirement 21.1: Single-column layout for mobile */}
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-4xl">
         {/* Controls */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="mb-4 sm:mb-6 bg-white rounded-lg shadow-sm p-3 sm:p-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {/* Sort Controls */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Sort by:</span>
-              <div className="flex gap-1">
+              <div className="flex gap-1 sm:gap-1">
                 <button
                   onClick={() => handleSortChange('new')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded text-sm font-medium transition-colors min-h-[44px] ${
                     sort === 'new'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -162,7 +170,7 @@ export const Home: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleSortChange('top')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded text-sm font-medium transition-colors min-h-[44px] ${
                     sort === 'top'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -172,7 +180,7 @@ export const Home: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleSortChange('best')}
-                  className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded text-sm font-medium transition-colors min-h-[44px] ${
                     sort === 'best'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -184,41 +192,41 @@ export const Home: React.FC = () => {
             </div>
 
             {/* Search - with debouncing */}
-            <div className="flex gap-2 flex-1 sm:flex-initial">
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search posts..."
-                className="flex-1 sm:w-64 px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[44px]"
               />
               {searchInput && (
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="px-3 py-1 text-gray-500 hover:text-gray-700 transition-colors text-sm"
+                  className="px-3 py-2 text-gray-500 hover:text-gray-700 transition-colors text-sm min-w-[44px] min-h-[44px] flex items-center justify-center"
                   aria-label="Clear search"
                 >
                   ✕
                 </button>
               )}
             </div>
-          </div>
 
-          {/* Active Search Indicator */}
-          {searchQuery && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                Searching for: <span className="font-semibold">{searchQuery}</span>
-              </span>
-              <button
-                onClick={handleClearSearch}
-                className="text-sm text-orange-500 hover:text-orange-600 font-medium"
-              >
-                Clear
-              </button>
-            </div>
-          )}
+            {/* Active Search Indicator */}
+            {searchQuery && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  Searching for: <span className="font-semibold break-words">{searchQuery}</span>
+                </span>
+                <button
+                  onClick={handleClearSearch}
+                  className="text-sm text-orange-500 hover:text-orange-600 font-medium self-start sm:self-auto min-h-[44px] sm:min-h-0 flex items-center"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Post List */}

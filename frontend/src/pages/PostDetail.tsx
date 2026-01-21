@@ -215,18 +215,19 @@ export const PostDetail: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-orange-500 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-3 sm:px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 className="text-white font-bold text-xl">Hacker News Clone</h1>
-            <div className="flex items-center gap-4">
+            <h1 className="text-white font-bold text-base sm:text-xl">Hacker News Clone</h1>
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={handleBackToHome}
-                className="px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-sm font-medium"
+                className="px-2 sm:px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
               >
-                Back to Home
+                <span className="hidden sm:inline">Back to Home</span>
+                <span className="sm:hidden">Back</span>
               </button>
               {isAuthenticated && user && (
-                <span className="text-white text-sm">
+                <span className="text-white text-xs sm:text-sm hidden md:inline">
                   {user.username}
                 </span>
               )}
@@ -235,10 +236,10 @@ export const PostDetail: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      {/* Main Content - Requirement 21.1: Single-column layout for mobile */}
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-4xl">
         {/* Post Details */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="bg-white rounded-lg shadow-sm mb-4 sm:mb-6">
           <PostItem
             post={post}
             userVote={userVotes[post._id]}
@@ -247,8 +248,8 @@ export const PostDetail: React.FC = () => {
 
           {/* Text Content for Text Posts */}
           {post.type === 'text' && post.text && (
-            <div className="px-4 pb-4">
-              <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
+            <div className="px-3 sm:px-4 pb-4">
+              <div className="prose max-w-none text-sm sm:text-base text-gray-700 whitespace-pre-wrap break-words">
                 {post.text}
               </div>
             </div>
@@ -257,8 +258,8 @@ export const PostDetail: React.FC = () => {
 
         {/* Comment Form for Top-Level Comments */}
         {isAuthenticated ? (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Add a comment</h3>
+          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Add a comment</h3>
             <CommentForm
               postId={post._id}
               onCommentCreated={handleCommentCreated}
@@ -266,13 +267,13 @@ export const PostDetail: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-6 text-center">
-            <p className="text-gray-600 mb-3">
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4 sm:mb-6 text-center">
+            <p className="text-sm sm:text-base text-gray-600 mb-3">
               Please log in to comment
             </p>
             <button
               onClick={() => navigate('/login')}
-              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm font-medium"
+              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm font-medium min-h-[44px]"
             >
               Log In
             </button>
@@ -280,8 +281,8 @@ export const PostDetail: React.FC = () => {
         )}
 
         {/* Comments Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
             Comments ({post.comment_count})
           </h3>
 
@@ -293,7 +294,7 @@ export const PostDetail: React.FC = () => {
               onVoteUpdate={handleCommentVoteUpdate}
             />
           ) : (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-sm sm:text-base text-gray-500 text-center py-8">
               No comments yet. Be the first to comment!
             </p>
           )}

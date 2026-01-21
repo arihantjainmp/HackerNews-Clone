@@ -173,18 +173,18 @@ const CreatePost: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-12 px-3 sm:px-4 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">Submit a Post</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Submit a Post</h1>
           <p className="mt-2 text-sm text-gray-600">
             Share an interesting link or start a discussion
           </p>
         </div>
 
         {/* Form */}
-        <div className="bg-white shadow-sm rounded-lg p-6">
+        <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6">
           <form onSubmit={handleSubmit} noValidate>
             {/* Server Error Display */}
             {serverError && (
@@ -208,15 +208,15 @@ const CreatePost: React.FC = () => {
               </div>
             )}
 
-            {/* Post Type Toggle */}
+            {/* Post Type Toggle - Requirement 21.5: Touch targets at least 44x44px */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Post Type</label>
-              <div className="flex gap-4">
+              <div className="flex gap-2 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => handlePostTypeChange('link')}
                   disabled={isSubmitting}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors min-h-[44px] ${
                     postType === 'link'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -228,7 +228,7 @@ const CreatePost: React.FC = () => {
                   type="button"
                   onClick={() => handlePostTypeChange('text')}
                   disabled={isSubmitting}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors min-h-[44px] ${
                     postType === 'text'
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -256,7 +256,7 @@ const CreatePost: React.FC = () => {
                 placeholder="Enter a descriptive title"
                 className={`appearance-none block w-full px-3 py-2 border ${
                   errors.title ? 'border-red-300' : 'border-gray-300'
-                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[44px]`}
                 aria-invalid={errors.title ? 'true' : 'false'}
                 aria-describedby={errors.title ? 'title-error' : 'title-help'}
               />
@@ -288,7 +288,7 @@ const CreatePost: React.FC = () => {
                   placeholder="https://example.com"
                   className={`appearance-none block w-full px-3 py-2 border ${
                     errors.url ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[44px]`}
                   aria-invalid={errors.url ? 'true' : 'false'}
                   aria-describedby={errors.url ? 'url-error' : undefined}
                 />
@@ -318,7 +318,7 @@ const CreatePost: React.FC = () => {
                   placeholder="Share your thoughts..."
                   className={`appearance-none block w-full px-3 py-2 border ${
                     errors.text ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed`}
                   aria-invalid={errors.text ? 'true' : 'false'}
                   aria-describedby={errors.text ? 'text-error' : 'text-help'}
                 />
@@ -334,12 +334,12 @@ const CreatePost: React.FC = () => {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex gap-4">
+            {/* Action Buttons - Requirement 21.5: Touch targets at least 44x44px */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[44px]"
               >
                 {isSubmitting ? (
                   <span className="flex items-center">
@@ -373,7 +373,7 @@ const CreatePost: React.FC = () => {
                 type="button"
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
               >
                 Cancel
               </button>

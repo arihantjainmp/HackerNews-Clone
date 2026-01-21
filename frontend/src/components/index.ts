@@ -3,6 +3,7 @@
  */
 
 export { default as ProtectedRoute } from './ProtectedRoute';
+export { Layout } from './Layout';
 export { PostItem } from './PostItem';
 export { PostList } from './PostList';
 export { CommentItem } from './CommentItem';

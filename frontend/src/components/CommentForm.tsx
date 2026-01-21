@@ -227,11 +227,11 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-2 mt-2">
+      <div className="flex flex-col sm:flex-row gap-2 mt-2">
         <button
           type="submit"
           disabled={isSubmitting || !content.trim()}
-          className="px-4 py-2 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full sm:w-auto px-4 py-2 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
         >
           {isSubmitting ? 'Posting...' : 'Post Comment'}
         </button>
@@ -241,7 +241,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
           >
             Cancel
           </button>

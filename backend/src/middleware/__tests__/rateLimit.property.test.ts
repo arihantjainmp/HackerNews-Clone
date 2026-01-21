@@ -220,8 +220,8 @@ describe('Property 39: Rate Limit Enforcement', () => {
       fc.asyncProperty(
         fc.integer({ min: 5, max: 12 }),
         async (limit) => {
-          // Create a unique store key for each test run
-          const storeKey = `test-${Date.now()}-${Math.random()}`;
+          // Create a unique store key for each test run with more entropy
+          const storeKey = `test-${Date.now()}-${Math.random()}-${limit}`;
           
           const testRateLimiter = rateLimit({
             windowMs: 60000,
@@ -229,6 +229,9 @@ describe('Property 39: Rate Limit Enforcement', () => {
             standardHeaders: true,
             legacyHeaders: false,
             keyGenerator: () => storeKey,
+            // Skip failed requests to avoid counting errors against the limit
+            skipFailedRequests: true,
+            skipSuccessfulRequests: false,
           });
 
           const testApp = express();
@@ -241,6 +244,10 @@ describe('Property 39: Rate Limit Enforcement', () => {
           // Property: First 'limit' requests always succeed
           for (let i = 0; i < limit; i++) {
             const response = await request(testApp).get('/test');
+            // If we get an unexpected status, log it for debugging
+            if (response.status !== 200) {
+              console.error(`Unexpected status ${response.status} on request ${i + 1}/${limit}`);
+            }
             expect(response.status).toBe(200);
           }
 

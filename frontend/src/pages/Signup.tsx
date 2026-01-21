@@ -165,9 +165,9 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
@@ -179,7 +179,7 @@ const Signup: React.FC = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-6 sm:py-8 px-4 sm:px-10 shadow sm:rounded-lg">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {/* Server Error Display */}
             {serverError && (
@@ -209,7 +209,7 @@ const Signup: React.FC = () => {
                   disabled={isSubmitting}
                   className={`appearance-none block w-full px-3 py-2 border ${
                     errors.username ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[44px]`}
                   aria-invalid={errors.username ? 'true' : 'false'}
                   aria-describedby={errors.username ? 'username-error' : undefined}
                 />
@@ -238,7 +238,7 @@ const Signup: React.FC = () => {
                   disabled={isSubmitting}
                   className={`appearance-none block w-full px-3 py-2 border ${
                     errors.email ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[44px]`}
                   aria-invalid={errors.email ? 'true' : 'false'}
                   aria-describedby={errors.email ? 'email-error' : undefined}
                 />
@@ -268,7 +268,7 @@ const Signup: React.FC = () => {
                   disabled={isSubmitting}
                   className={`appearance-none block w-full px-3 py-2 border ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
-                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-hn-orange focus:border-hn-orange text-sm sm:text-base disabled:bg-gray-100 disabled:cursor-not-allowed min-h-[44px]`}
                   aria-invalid={errors.password ? 'true' : 'false'}
                   aria-describedby={
                     errors.password
@@ -305,12 +305,12 @@ const Signup: React.FC = () => {
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button - Requirement 21.5: Touch targets at least 44x44px */}
             <div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hn-orange hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hn-orange disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hn-orange hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hn-orange disabled:bg-gray-400 disabled:cursor-not-allowed min-h-[44px]"
               >
                 {isSubmitting ? (
                   <span className="flex items-center">

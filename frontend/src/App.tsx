@@ -1,16 +1,16 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { Login, Signup, Home, CreatePost, PostDetail } from './pages';
-import { ProtectedRoute } from './components';
+import { Login, Signup, Home, CreatePost, PostDetail, NotFound } from './pages';
+import { ProtectedRoute, Layout } from './components';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
+    <AuthProvider>
+      <Layout>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Home />} />
           <Route path="/posts/:id" element={<PostDetail />} />
           <Route
             path="/submit"
@@ -20,9 +20,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* 404 Not Found - catch all unmatched routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+      </Layout>
+    </AuthProvider>
   );
 }
 

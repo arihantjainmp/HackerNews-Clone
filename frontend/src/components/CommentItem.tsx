@@ -258,21 +258,21 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // ============================================================================
 
   return (
-    <div className="flex gap-2 py-2">
+    <div className="flex gap-2 sm:gap-3 py-2">
       {/* Vote Controls */}
-      <div className="flex flex-col items-center gap-1 min-w-[32px]">
-        {/* Upvote Button */}
+      <div className="flex flex-col items-center gap-1 min-w-[44px] sm:min-w-[36px]">
+        {/* Upvote Button - Requirement 21.5: Touch targets at least 44x44px on mobile */}
         <button
           onClick={() => handleVote(1)}
           disabled={isVoting || localIsDeleted}
-          className={`p-0.5 rounded transition-colors ${
+          className={`p-2 sm:p-0.5 rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
             localUserVote === 1 ? 'text-orange-500' : 'text-gray-400 hover:text-orange-500'
           } ${isVoting || localIsDeleted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           aria-label="Upvote"
           title="Upvote"
         >
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 sm:w-4 sm:h-4"
             fill={localUserVote === 1 ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
@@ -285,18 +285,18 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         {/* Points Display */}
         <span className="text-xs font-semibold text-gray-700">{localPoints}</span>
 
-        {/* Downvote Button */}
+        {/* Downvote Button - Requirement 21.5: Touch targets at least 44x44px on mobile */}
         <button
           onClick={() => handleVote(-1)}
           disabled={isVoting || localIsDeleted}
-          className={`p-0.5 rounded transition-colors ${
+          className={`p-2 sm:p-0.5 rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
             localUserVote === -1 ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'
           } ${isVoting || localIsDeleted ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           aria-label="Downvote"
           title="Downvote"
         >
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 sm:w-4 sm:h-4"
             fill={localUserVote === -1 ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
@@ -371,31 +371,31 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
         {/* Action Buttons */}
         {!isEditing && !localIsDeleted && (
-          <div className="flex items-center gap-3 text-xs">
-            {/* Reply Button */}
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            {/* Reply Button - Requirement 21.5: Touch targets at least 44x44px on mobile */}
             <button
               onClick={handleReplyClick}
-              className="text-gray-600 hover:text-orange-600 transition-colors"
+              className="text-gray-600 hover:text-orange-600 transition-colors min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
             >
               reply
             </button>
 
-            {/* Edit Button (only for author) */}
+            {/* Edit Button (only for author) - Requirement 21.5: Touch targets at least 44x44px on mobile */}
             {isAuthor && (
               <button
                 onClick={handleEditClick}
-                className="text-gray-600 hover:text-orange-600 transition-colors"
+                className="text-gray-600 hover:text-orange-600 transition-colors min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
               >
                 edit
               </button>
             )}
 
-            {/* Delete Button (only for author) */}
+            {/* Delete Button (only for author) - Requirement 21.5: Touch targets at least 44x44px on mobile */}
             {isAuthor && (
               <button
                 onClick={handleDeleteClick}
                 disabled={isDeleting}
-                className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
               >
                 {isDeleting ? 'deleting...' : 'delete'}
               </button>

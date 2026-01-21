@@ -142,21 +142,21 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
   // ============================================================================
 
   return (
-    <div className="flex gap-2 py-3 px-4 border-b border-gray-200 hover:bg-gray-50">
+    <div className="flex gap-2 sm:gap-3 py-3 px-3 sm:px-4 border-b border-gray-200 hover:bg-gray-50">
       {/* Vote Controls */}
-      <div className="flex flex-col items-center gap-1 min-w-[40px]">
-        {/* Upvote Button */}
+      <div className="flex flex-col items-center gap-1 min-w-[44px] sm:min-w-[48px]">
+        {/* Upvote Button - Requirement 21.5: Touch targets at least 44x44px */}
         <button
           onClick={() => handleVote(1)}
           disabled={isVoting}
-          className={`p-1 rounded transition-colors ${
+          className={`p-2 sm:p-1 rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
             localUserVote === 1 ? 'text-orange-500' : 'text-gray-400 hover:text-orange-500'
           } ${isVoting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           aria-label="Upvote"
           title="Upvote"
         >
           <svg
-            className="w-5 h-5"
+            className="w-5 h-5 sm:w-5 sm:h-5"
             fill={localUserVote === 1 ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
@@ -167,20 +167,20 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
         </button>
 
         {/* Points Display */}
-        <span className="text-sm font-semibold text-gray-700">{localPoints}</span>
+        <span className="text-sm sm:text-sm font-semibold text-gray-700">{localPoints}</span>
 
-        {/* Downvote Button */}
+        {/* Downvote Button - Requirement 21.5: Touch targets at least 44x44px */}
         <button
           onClick={() => handleVote(-1)}
           disabled={isVoting}
-          className={`p-1 rounded transition-colors ${
+          className={`p-2 sm:p-1 rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 flex items-center justify-center ${
             localUserVote === -1 ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'
           } ${isVoting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           aria-label="Downvote"
           title="Downvote"
         >
           <svg
-            className="w-5 h-5"
+            className="w-5 h-5 sm:w-5 sm:h-5"
             fill={localUserVote === -1 ? 'currentColor' : 'none'}
             stroke="currentColor"
             strokeWidth="2"
@@ -194,11 +194,11 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
       {/* Post Content */}
       <div className="flex-1 min-w-0">
         {/* Title */}
-        <div className="flex items-start gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
           <a
             href={post.type === 'link' && post.url ? post.url : `/posts/${post._id}`}
             onClick={handleTitleClick}
-            className="text-base font-medium text-gray-900 hover:text-orange-600 transition-colors"
+            className="text-sm sm:text-base font-medium text-gray-900 hover:text-orange-600 transition-colors break-words"
           >
             {post.title}
           </a>
@@ -210,14 +210,17 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
         </div>
 
         {/* Metadata */}
-        <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1 text-xs text-gray-600">
           <span>
             by <span className="font-medium">{post.author?.username || 'unknown'}</span>
           </span>
-          <span>•</span>
+          <span className="hidden sm:inline">•</span>
           <span>{formatTimeAgo(post.created_at)}</span>
-          <span>•</span>
-          <button onClick={handleCommentsClick} className="hover:text-orange-600 transition-colors">
+          <span className="hidden sm:inline">•</span>
+          <button 
+            onClick={handleCommentsClick} 
+            className="hover:text-orange-600 transition-colors min-h-[44px] sm:min-h-0 flex items-center"
+          >
             {post.comment_count} {post.comment_count === 1 ? 'comment' : 'comments'}
           </button>
         </div>
