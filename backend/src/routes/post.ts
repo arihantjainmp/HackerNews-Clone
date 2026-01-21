@@ -4,7 +4,7 @@ import {
   getPostById,
   createPost
 } from '../services/postService';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, optionalAuthenticateToken } from '../middleware/auth';
 import {
   validateRequest,
   validateQuery,
@@ -31,7 +31,7 @@ const router = Router();
  * 
  * Requirements: 4.1
  */
-router.get('/', validateQuery(getPostsQuerySchema), asyncHandler(async (req: Request, res: Response) => {
+router.get('/', optionalAuthenticateToken, validateQuery(getPostsQuerySchema), asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, sort, q } = req.query;
 
   // Convert query parameters to appropriate types
@@ -39,7 +39,8 @@ router.get('/', validateQuery(getPostsQuerySchema), asyncHandler(async (req: Req
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
     sort: sort as 'new' | 'top' | 'best' | undefined,
-    search: q as string | undefined
+    search: q as string | undefined,
+    userId: req.userId // Include userId if authenticated (from optional auth middleware)
   };
 
   // Get posts with pagination, sorting, and search
@@ -88,24 +89,44 @@ router.post(
 
 /**
  * GET /api/posts/:id
- * Get a single post by ID with details
+ * Get a single post by ID with details and comment tree
  * 
  * Request params:
  * - id: string (post ID)
  * 
  * Response:
- * - 200: { post: IPostResponse }
+ * - 200: { post: IPostResponse, comments: ICommentNode[] }
  * - 404: { error: string } - Post not found
  * 
  * Requirements: 4.10
  */
-router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
+router.get('/:id', optionalAuthenticateToken, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  // Get post by ID
-  const post = await getPostById(id!);
+  // Get post by ID with user's vote if authenticated
+  const post = await getPostById(id!, req.userId);
 
-  res.status(200).json({ post });
+  // Get all comments for this post and build tree
+  const { Comment } = await import('../models/Comment');
+  const { buildCommentTree } = await import('../services/commentService');
+  
+  const comments = await Comment.find({ post_id: id })
+    .populate('author_id', 'username email created_at')
+    .sort({ created_at: 1 }) // Sort by oldest first for proper tree building
+    .lean()
+    .exec();
+
+  // Transform comments to rename author_id to author for frontend compatibility
+  const transformedComments = comments.map((comment: any) => ({
+    ...comment,
+    author: comment.author_id,
+    author_id: comment.author_id?._id || comment.author_id
+  }));
+
+  // Build comment tree
+  const commentTree = buildCommentTree(transformedComments as any[]);
+
+  res.status(200).json({ post, comments: commentTree });
 }));
 
 export default router;

@@ -50,26 +50,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
-        // Tokens exist - verify by making an authenticated request
-        // We'll use the token refresh endpoint to validate and get fresh tokens
+        // Tokens exist - fetch current user data
         try {
-          await authApi.refreshAccessToken(tokens.refreshToken);
-
-          // If refresh succeeds, we need to fetch user data
-          // For now, we'll decode the token or make a /me endpoint call
-          // Since we don't have a /me endpoint yet, we'll just mark as authenticated
-          // The user data will be populated on next API call or we can add a /me endpoint
-
-          // TODO: Implement /api/auth/me endpoint to fetch current user
-          // For now, we'll set a placeholder that will be updated on first authenticated action
-          setUser({
-            _id: '',
-            username: '',
-            email: '',
-            created_at: '',
-          });
+          const userData = await authApi.getCurrentUser();
+          setUser(userData);
         } catch (error) {
-          // Token refresh failed - clear tokens
+          // Failed to get user data - clear tokens
           clearStoredTokens();
           setUser(null);
         }

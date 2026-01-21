@@ -9,6 +9,7 @@ import { User } from '../../models/User';
 import { Post } from '../../models/Post';
 import { RefreshToken } from '../../models/RefreshToken';
 import { errorHandler } from '../../middleware/errorHandler';
+import { cache } from '../../utils/cache';
 
 let mongoServer: MongoMemoryServer;
 let app: Application;
@@ -41,6 +42,9 @@ beforeEach(async () => {
   await User.deleteMany({});
   await Post.deleteMany({});
   await RefreshToken.deleteMany({});
+  
+  // Clear cache before each test
+  cache.clear();
 });
 
 describe('Post Endpoints Integration Tests', () => {

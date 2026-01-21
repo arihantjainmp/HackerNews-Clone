@@ -183,12 +183,12 @@ describe('Property-Based Tests: Vote State Transitions', () => {
   });
 
   /**
-   * Feature: hacker-news-clone, Property 19: Vote Idempotence
+   * Feature: hacker-news-clone, Property 19: Vote Toggle
    * For any post or comment where a user has already voted in a direction (up or down),
-   * voting again in the same direction should result in no change to points or vote records.
+   * voting again in the same direction should toggle off the vote (remove it).
    * **Validates: Requirements 5.3, 5.6, 8.3, 8.6**
    */
-  it('Property 19: Voting in same direction should be idempotent', async () => {
+  it('Property 19: Voting in same direction should toggle off the vote', async () => {
     await fc.assert(
       fc.asyncProperty(
         fc.constantFrom('post', 'comment'),
@@ -237,7 +237,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
 
           const pointsAfterFirstVote = firstResult.points;
 
-          // Second vote in same direction (should be idempotent)
+          // Second vote in same direction (should toggle off)
           const secondResult = await handleVote(
             user._id.toString(),
             target._id.toString(),
@@ -245,17 +245,16 @@ describe('Property-Based Tests: Vote State Transitions', () => {
             initialDirection
           );
 
-          // Verify no change in points
-          expect(secondResult.points).toBe(pointsAfterFirstVote);
-          expect(secondResult.userVote).toBe(initialDirection);
+          // Verify points returned to original value
+          expect(secondResult.points).toBe(pointsAfterFirstVote - initialDirection);
+          expect(secondResult.userVote).toBe(0);
 
-          // Verify only one vote record exists
+          // Verify vote record was deleted
           const votes = await Vote.find({
             user_id: user._id,
             target_id: target._id
           });
-          expect(votes).toHaveLength(1);
-          expect(votes[0].direction).toBe(initialDirection);
+          expect(votes).toHaveLength(0);
         }
       ),
       { numRuns: 100 }

@@ -21,7 +21,7 @@ import { Link } from 'react-router-dom';
 
 const NotFound: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
           <h1 className="text-9xl font-extrabold text-hn-orange">404</h1>

@@ -2,6 +2,7 @@ import { Vote } from '../models/Vote';
 import { Post } from '../models/Post';
 import { Comment } from '../models/Comment';
 import { NotFoundError } from '../utils/errors';
+import { cache } from '../utils/cache';
 
 /**
  * Vote Service
@@ -15,10 +16,10 @@ import { NotFoundError } from '../utils/errors';
  * Vote State Machine:
  * - NO_VOTE → UPVOTE: +1 point
  * - NO_VOTE → DOWNVOTE: -1 point
- * - UPVOTE → UPVOTE: 0 points (idempotent, no change)
+ * - UPVOTE → UPVOTE: -1 point (toggle off, remove vote)
  * - UPVOTE → DOWNVOTE: -2 points
  * - DOWNVOTE → UPVOTE: +2 points
- * - DOWNVOTE → DOWNVOTE: 0 points (idempotent, no change)
+ * - DOWNVOTE → DOWNVOTE: +1 point (toggle off, remove vote)
  * 
  * @param userId - The ID of the user casting the vote
  * @param targetId - The ID of the post or comment being voted on
@@ -40,6 +41,7 @@ export async function handleVote(
   });
 
   let pointsDelta = 0;
+  let finalUserVote = newDirection;
 
   if (!existingVote) {
     // State transition: NO_VOTE → UPVOTE or NO_VOTE → DOWNVOTE
@@ -54,18 +56,12 @@ export async function handleVote(
     });
   } else if (existingVote.direction === newDirection) {
     // State transition: UPVOTE → UPVOTE or DOWNVOTE → DOWNVOTE
-    // Idempotent operation - no change needed
-    const Model = targetType === 'post' ? Post : Comment;
-    const target = await (Model as any).findById(targetId);
+    // Toggle off - remove the vote
+    pointsDelta = -newDirection;
+    finalUserVote = 0;
     
-    if (!target) {
-      throw new NotFoundError(`${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`);
-    }
-    
-    return {
-      points: target.points,
-      userVote: newDirection
-    };
+    // Delete the vote record
+    await Vote.deleteOne({ _id: existingVote._id });
   } else {
     // State transition: UPVOTE → DOWNVOTE or DOWNVOTE → UPVOTE
     // Calculate delta: new direction - old direction = ±2
@@ -91,9 +87,18 @@ export async function handleVote(
     throw new NotFoundError(`${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`);
   }
 
+  // Invalidate cached user vote state
+  const voteCacheKey = cache.generateKey('vote', { userId, targetId });
+  cache.invalidate(voteCacheKey);
+
+  // If voting on a post, invalidate post list caches since points changed
+  if (targetType === 'post') {
+    cache.invalidateByPrefix('posts');
+  }
+
   return {
     points: updatedTarget.points,
-    userVote: newDirection
+    userVote: finalUserVote
   };
 }
 
@@ -131,6 +136,7 @@ export async function voteOnComment(
 
 /**
  * Get user's current vote on a target (post or comment)
+ * Caches the result to improve performance
  * 
  * @param userId - The ID of the user
  * @param targetId - The ID of the post or comment
@@ -140,6 +146,21 @@ export async function getUserVote(
   userId: string,
   targetId: string
 ): Promise<number> {
+  // Generate cache key for this user's vote on this target
+  const cacheKey = cache.generateKey('vote', { userId, targetId });
+
+  // Check cache first
+  const cachedVote = cache.get<number>(cacheKey);
+  if (cachedVote !== null) {
+    return cachedVote;
+  }
+
+  // Fetch from database
   const vote = await Vote.findOne({ user_id: userId, target_id: targetId });
-  return vote ? vote.direction : 0;
+  const voteDirection = vote ? vote.direction : 0;
+
+  // Cache the result for 10 minutes
+  cache.set(cacheKey, voteDirection, 10 * 60 * 1000);
+
+  return voteDirection;
 }

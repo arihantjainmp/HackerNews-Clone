@@ -33,7 +33,7 @@ import type { Post, CommentNode, Comment } from '../types';
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   // State
   const [post, setPost] = useState<Post | null>(null);
@@ -41,6 +41,7 @@ export const PostDetail: React.FC = () => {
   const [userVotes, setUserVotes] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   /**
    * Fetch post and comment tree from API
@@ -62,9 +63,12 @@ export const PostDetail: React.FC = () => {
       setPost(response.post);
       setComments(response.comments);
 
-      // TODO: Fetch user votes for post and all comments
-      // For now, initialize with empty votes
-      setUserVotes({});
+      // Initialize user votes with post's userVote if available
+      const initialVotes: Record<string, number> = {};
+      if (response.post.userVote !== undefined) {
+        initialVotes[response.post._id] = response.post.userVote;
+      }
+      setUserVotes(initialVotes);
     } catch (err: any) {
       console.error('Failed to fetch post:', err);
 
@@ -146,6 +150,64 @@ export const PostDetail: React.FC = () => {
   }, []);
 
   /**
+   * Handle reply button click
+   */
+  const handleReply = useCallback((commentId: string) => {
+    setReplyingTo(commentId);
+  }, []);
+
+  /**
+   * Handle reply created
+   */
+  const handleReplyCreated = useCallback((newComment: Comment) => {
+    // Recursively update comment tree to add the new reply
+    const addReplyToTree = (nodes: CommentNode[]): CommentNode[] => {
+      return nodes.map((node) => {
+        if (node.comment._id === newComment.parent_id) {
+          // Found the parent - add reply
+          return {
+            ...node,
+            replies: [
+              {
+                comment: newComment,
+                replies: [],
+              },
+              ...node.replies,
+            ],
+          };
+        } else if (node.replies.length > 0) {
+          // Recursively search in replies
+          return {
+            ...node,
+            replies: addReplyToTree(node.replies),
+          };
+        }
+        return node;
+      });
+    };
+
+    setComments((prevComments) => addReplyToTree(prevComments));
+
+    // Update post comment count
+    if (post) {
+      setPost({
+        ...post,
+        comment_count: post.comment_count + 1,
+      });
+    }
+
+    // Close reply form
+    setReplyingTo(null);
+  }, [post]);
+
+  /**
+   * Handle reply cancel
+   */
+  const handleReplyCancel = useCallback(() => {
+    setReplyingTo(null);
+  }, []);
+
+  /**
    * Navigate back to home
    */
   const handleBackToHome = () => {
@@ -158,7 +220,7 @@ export const PostDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
           <p className="mt-4 text-gray-600">Loading post...</p>
@@ -173,36 +235,18 @@ export const PostDetail: React.FC = () => {
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-orange-500 shadow-sm">
-          <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <h1 className="text-white font-bold text-xl">Hacker News Clone</h1>
-              <button
-                onClick={handleBackToHome}
-                className="px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-sm font-medium"
-              >
-                Back to Home
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Error Message */}
-        <main className="container mx-auto px-4 py-6 max-w-4xl">
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="text-red-500 text-5xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
-            <p className="text-gray-600 mb-6">{error || 'Post not found'}</p>
-            <button
-              onClick={handleBackToHome}
-              className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-            >
-              Go to Home
-            </button>
-          </div>
-        </main>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
+          <p className="text-gray-600 mb-6">{error || 'Post not found'}</p>
+          <button
+            onClick={handleBackToHome}
+            className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+          >
+            Go to Home
+          </button>
+        </div>
       </div>
     );
   }
@@ -212,32 +256,7 @@ export const PostDetail: React.FC = () => {
   // ============================================================================
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-orange-500 shadow-sm">
-        <div className="container mx-auto px-3 sm:px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-white font-bold text-base sm:text-xl">Hacker News Clone</h1>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <button
-                onClick={handleBackToHome}
-                className="px-2 sm:px-4 py-2 bg-white text-orange-500 rounded hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium min-h-[44px]"
-              >
-                <span className="hidden sm:inline">Back to Home</span>
-                <span className="sm:hidden">Back</span>
-              </button>
-              {isAuthenticated && user && (
-                <span className="text-white text-xs sm:text-sm hidden md:inline">
-                  {user.username}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content - Requirement 21.1: Single-column layout for mobile */}
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-4xl">
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-4xl">
         {/* Post Details */}
         <div className="bg-white rounded-lg shadow-sm mb-4 sm:mb-6">
           <PostItem
@@ -291,7 +310,11 @@ export const PostDetail: React.FC = () => {
               comments={comments}
               depth={0}
               userVotes={userVotes}
+              onReply={handleReply}
               onVoteUpdate={handleCommentVoteUpdate}
+              replyingTo={replyingTo}
+              onReplyCreated={handleReplyCreated}
+              onReplyCancel={handleReplyCancel}
             />
           ) : (
             <p className="text-sm sm:text-base text-gray-500 text-center py-8">
@@ -299,7 +322,6 @@ export const PostDetail: React.FC = () => {
             </p>
           )}
         </div>
-      </main>
     </div>
   );
 };

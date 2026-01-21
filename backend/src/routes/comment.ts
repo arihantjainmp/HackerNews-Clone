@@ -50,7 +50,17 @@ router.post(
       authorId: userId
     });
 
-    res.status(201).json({ comment });
+    // Populate author information for frontend
+    await comment.populate('author_id', 'username email created_at');
+    
+    // Transform to rename author_id to author for frontend compatibility
+    const commentResponse = {
+      ...comment.toObject(),
+      author: (comment as any).author_id,
+      author_id: comment.author_id._id || comment.author_id
+    };
+
+    res.status(201).json({ comment: commentResponse });
   })
 );
 
@@ -99,7 +109,17 @@ router.post(
       authorId: userId
     });
 
-    res.status(201).json({ comment: reply });
+    // Populate author information for frontend
+    await reply.populate('author_id', 'username email created_at');
+    
+    // Transform to rename author_id to author for frontend compatibility
+    const replyResponse = {
+      ...reply.toObject(),
+      author: (reply as any).author_id,
+      author_id: reply.author_id._id || reply.author_id
+    };
+
+    res.status(201).json({ comment: replyResponse });
   })
 );
 
@@ -135,7 +155,17 @@ router.put(
     // Edit comment
     const comment = await editComment(id!, content, userId);
 
-    res.status(200).json({ comment });
+    // Populate author information for frontend
+    await comment.populate('author_id', 'username email created_at');
+    
+    // Transform to rename author_id to author for frontend compatibility
+    const commentResponse = {
+      ...comment.toObject(),
+      author: (comment as any).author_id,
+      author_id: comment.author_id._id || comment.author_id
+    };
+
+    res.status(200).json({ comment: commentResponse });
   })
 );
 

@@ -109,3 +109,14 @@ export const logout = async (refreshToken: string): Promise<LogoutResponse> => {
 
   return response.data;
 };
+
+/**
+ * Get current authenticated user's information
+ *
+ * @returns Current user data
+ * @throws AuthenticationError if not authenticated or token is invalid
+ */
+export const getCurrentUser = async (): Promise<AuthResponse['user']> => {
+  const response = await apiClient.get<{ user: AuthResponse['user'] }>('/api/auth/me');
+  return response.data.user;
+};

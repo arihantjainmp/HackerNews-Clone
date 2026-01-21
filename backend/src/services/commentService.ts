@@ -3,6 +3,7 @@ import { Post } from '../models/Post';
 import { Types } from 'mongoose';
 import { sanitizeText } from '../utils/sanitize';
 import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors';
+import { cache } from '../utils/cache';
 
 /**
  * Comment Service
@@ -153,6 +154,9 @@ export async function createComment(data: {
     { $inc: { comment_count: 1 } }
   );
 
+  // Invalidate post list caches since comment_count changed
+  cache.invalidateByPrefix('posts');
+
   return comment;
 }
 
@@ -222,6 +226,9 @@ export async function createReply(data: {
     postId,
     { $inc: { comment_count: 1 } }
   );
+
+  // Invalidate post list caches since comment_count changed
+  cache.invalidateByPrefix('posts');
 
   return reply;
 }

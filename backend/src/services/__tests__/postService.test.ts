@@ -14,6 +14,7 @@ import {
 } from '../postService';
 import { Post, IPost } from '../../models/Post';
 import { User } from '../../models/User';
+import { cache } from '../../utils/cache';
 
 let mongoServer: MongoMemoryServer;
 let testUserId: string;
@@ -40,6 +41,8 @@ afterAll(async () => {
 beforeEach(async () => {
   // Clear posts before each test
   await Post.deleteMany({});
+  // Clear cache before each test
+  cache.clear();
 });
 
 describe('createPost', () => {

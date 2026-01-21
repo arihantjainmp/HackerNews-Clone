@@ -192,7 +192,7 @@ export const PostList: React.FC<PostListProps> = ({ sort = 'new', searchQuery = 
       {/* Post List */}
       <div className="divide-y divide-gray-200">
         {posts.map((post) => (
-          <PostItem key={post._id} post={post} />
+          <PostItem key={post._id} post={post} userVote={post.userVote ?? 0} />
         ))}
       </div>
 

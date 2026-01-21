@@ -6,6 +6,7 @@ import { Vote } from '../../models/Vote';
 import { Post } from '../../models/Post';
 import { Comment } from '../../models/Comment';
 import { User } from '../../models/User';
+import { cache } from '../../utils/cache';
 
 let mongoServer: MongoMemoryServer;
 let testUserId: string;
@@ -29,6 +30,8 @@ beforeEach(async () => {
   await Post.deleteMany({});
   await Comment.deleteMany({});
   await Vote.deleteMany({});
+  // Clear cache before each test
+  cache.clear();
 
   // Create test user
   const user = await User.create({
@@ -87,32 +90,40 @@ describe('handleVote - Post Voting', () => {
     expect(vote?.direction).toBe(-1);
   });
 
-  it('should not change points when upvoting again (idempotent)', async () => {
+  it('should remove vote when upvoting again (toggle off)', async () => {
     // First upvote
     await handleVote(testUserId, testPostId, 'post', 1);
 
-    // Second upvote (should be idempotent)
+    // Second upvote (should toggle off)
     const result = await handleVote(testUserId, testPostId, 'post', 1);
 
-    expect(result.points).toBe(1);
-    expect(result.userVote).toBe(1);
+    expect(result.points).toBe(0);
+    expect(result.userVote).toBe(0);
 
     const post = await Post.findById(testPostId);
-    expect(post?.points).toBe(1);
+    expect(post?.points).toBe(0);
+
+    // Verify vote record was deleted
+    const vote = await Vote.findOne({ user_id: testUserId, target_id: testPostId });
+    expect(vote).toBeNull();
   });
 
-  it('should not change points when downvoting again (idempotent)', async () => {
+  it('should remove vote when downvoting again (toggle off)', async () => {
     // First downvote
     await handleVote(testUserId, testPostId, 'post', -1);
 
-    // Second downvote (should be idempotent)
+    // Second downvote (should toggle off)
     const result = await handleVote(testUserId, testPostId, 'post', -1);
 
-    expect(result.points).toBe(-1);
-    expect(result.userVote).toBe(-1);
+    expect(result.points).toBe(0);
+    expect(result.userVote).toBe(0);
 
     const post = await Post.findById(testPostId);
-    expect(post?.points).toBe(-1);
+    expect(post?.points).toBe(0);
+
+    // Verify vote record was deleted
+    const vote = await Vote.findOne({ user_id: testUserId, target_id: testPostId });
+    expect(vote).toBeNull();
   });
 
   it('should change points by -2 when switching from upvote to downvote', async () => {

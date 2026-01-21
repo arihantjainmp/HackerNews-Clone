@@ -2,6 +2,7 @@ import { Post, IPost } from '../models/Post';
 import { Types } from 'mongoose';
 import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
 import { ValidationError, NotFoundError } from '../utils/errors';
+import { cache } from '../utils/cache';
 
 /**
  * Post Service
@@ -28,9 +29,16 @@ export interface IPostResponse {
   text?: string;
   type: 'link' | 'text';
   author_id: string;
+  author?: {
+    _id: string;
+    username: string;
+    email: string;
+    created_at: Date;
+  };
   points: number;
   comment_count: number;
   created_at: Date;
+  userVote?: number; // -1, 0, or 1 (only present when user is authenticated)
 }
 
 /**
@@ -92,6 +100,7 @@ export interface IGetPostsOptions {
   limit?: number;
   sort?: 'new' | 'top' | 'best';
   search?: string;
+  userId?: string; // Optional user ID to fetch user's vote status
 }
 
 /**
@@ -123,8 +132,10 @@ function escapeRegex(str: string): string {
  * - Three sorting methods: new (by date), top (by points), best (HN algorithm)
  * - Case-insensitive search on title field
  * - Populates author data for each post
+ * - Fetches user's vote status for each post if userId is provided
+ * - Caches responses for 5 minutes to improve performance
  * 
- * @param options - Query options for pagination, sorting, and search
+ * @param options - Query options for pagination, sorting, search, and user context
  * @returns Promise resolving to paginated posts with metadata
  */
 export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPostsResponse> {
@@ -133,6 +144,22 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
   const limit = options.limit && options.limit > 0 ? options.limit : 25;
   const sort = options.sort || 'new';
   const search = options.search?.trim();
+  const userId = options.userId;
+
+  // Generate cache key based on query parameters (include userId for user-specific caching)
+  const cacheKey = cache.generateKey('posts', {
+    page,
+    limit,
+    sort,
+    search: search || '',
+    userId: userId || 'anonymous'
+  });
+
+  // Check cache first
+  const cachedResult = cache.get<IGetPostsResponse>(cacheKey);
+  if (cachedResult) {
+    return cachedResult;
+  }
 
   // Build query filter
   const filter: any = {};
@@ -182,35 +209,79 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
       .exec();
   }
 
-  // Transform posts to response format
-  const postsResponse: IPostResponse[] = posts.map((post: any) => ({
-    _id: post._id.toString(),
-    title: post.title,
-    url: post.url,
-    text: post.text,
-    type: post.type,
-    author_id: post.author_id._id ? post.author_id._id.toString() : post.author_id.toString(),
-    points: post.points,
-    comment_count: post.comment_count,
-    created_at: post.created_at
-  }));
+  // Fetch user votes if userId is provided
+  let userVotes: Map<string, number> = new Map();
+  if (userId && posts.length > 0) {
+    try {
+      const { getUserVote } = await import('./voteService');
+      const postIds = posts.map((post: any) => post._id.toString());
+      
+      // Fetch all votes in parallel for better performance
+      const votePromises = postIds.map(async (postId: string) => {
+        try {
+          const vote = await getUserVote(userId, postId);
+          return { postId, vote };
+        } catch (error) {
+          // If vote fetch fails, default to 0
+          return { postId, vote: 0 };
+        }
+      });
+      
+      const voteResults = await Promise.all(votePromises);
+      voteResults.forEach(({ postId, vote }) => {
+        userVotes.set(postId, vote);
+      });
+    } catch (error) {
+      // If vote service fails, continue without votes
+      console.error('Failed to fetch user votes:', error);
+    }
+  }
 
-  return {
+  // Transform posts to response format
+  const postsResponse: IPostResponse[] = posts.map((post: any) => {
+    const postId = post._id.toString();
+    return {
+      _id: postId,
+      title: post.title,
+      url: post.url,
+      text: post.text,
+      type: post.type,
+      author_id: post.author_id._id ? post.author_id._id.toString() : post.author_id.toString(),
+      author: post.author_id._id ? {
+        _id: post.author_id._id.toString(),
+        username: post.author_id.username,
+        email: post.author_id.email,
+        created_at: post.author_id.created_at
+      } : undefined,
+      points: post.points,
+      comment_count: post.comment_count,
+      created_at: post.created_at,
+      userVote: userId ? userVotes.get(postId) : undefined
+    };
+  });
+
+  const result: IGetPostsResponse = {
     posts: postsResponse,
     total,
     page,
     totalPages
   };
+
+  // Cache the result for 5 minutes
+  cache.set(cacheKey, result, 5 * 60 * 1000);
+
+  return result;
 }
 
 /**
  * Get a single post by ID with populated author data
  * 
  * @param postId - The ID of the post to retrieve
+ * @param userId - Optional user ID to fetch user's vote status
  * @returns Promise resolving to post with author data
  * @throws NotFoundError if post doesn't exist
  */
-export async function getPostById(postId: string): Promise<IPostResponse> {
+export async function getPostById(postId: string, userId?: string): Promise<IPostResponse> {
   // Validate ObjectId format
   if (!Types.ObjectId.isValid(postId)) {
     throw new NotFoundError('Post not found');
@@ -227,6 +298,18 @@ export async function getPostById(postId: string): Promise<IPostResponse> {
     throw new NotFoundError('Post not found');
   }
 
+  // Fetch user's vote if userId is provided
+  let userVote: number | undefined;
+  if (userId) {
+    try {
+      const { getUserVote } = await import('./voteService');
+      userVote = await getUserVote(userId, postId);
+    } catch (error) {
+      // If vote fetch fails, continue without userVote
+      console.error('Failed to fetch user vote:', error);
+    }
+  }
+
   // Transform to response format
   return {
     _id: post._id.toString(),
@@ -235,9 +318,16 @@ export async function getPostById(postId: string): Promise<IPostResponse> {
     text: post.text,
     type: post.type,
     author_id: post.author_id._id ? post.author_id._id.toString() : post.author_id.toString(),
+    author: post.author_id._id ? {
+      _id: post.author_id._id.toString(),
+      username: post.author_id.username,
+      email: post.author_id.email,
+      created_at: post.author_id.created_at
+    } : undefined,
     points: post.points,
     comment_count: post.comment_count,
-    created_at: post.created_at
+    created_at: post.created_at,
+    userVote
   };
 }
 
@@ -319,7 +409,11 @@ export async function createPost(data: ICreatePostData): Promise<IPostResponse> 
       // created_at is set to current timestamp by schema default
     });
 
-    // Return post data
+    // Invalidate all post list caches since a new post was created
+    // This ensures users see the new post in their feeds
+    cache.invalidateByPrefix('posts');
+
+    // Return post data (author not populated for newly created posts)
     return {
       _id: post._id.toString(),
       title: post.title,

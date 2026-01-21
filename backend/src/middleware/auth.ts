@@ -72,3 +72,57 @@ export function authenticateToken(
     return;
   }
 }
+
+/**
+ * Optional authentication middleware that extracts userId if token is present
+ * 
+ * Unlike authenticateToken, this middleware does not return an error if the token
+ * is missing or invalid. It simply attaches the userId to the request if a valid
+ * token is provided, allowing routes to work for both authenticated and anonymous users.
+ * 
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next function
+ */
+export function optionalAuthenticateToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  // Extract Authorization header
+  const authHeader = req.headers['authorization'];
+  
+  // If no auth header, continue without userId
+  if (!authHeader) {
+    next();
+    return;
+  }
+
+  // Extract token from Bearer scheme
+  const parts = authHeader.split(' ');
+  
+  if (parts.length !== 2 || parts[0] !== 'Bearer') {
+    // Invalid format, continue without userId
+    next();
+    return;
+  }
+
+  const token = parts[1];
+
+  // If token is empty, continue without userId
+  if (!token) {
+    next();
+    return;
+  }
+
+  // Try to verify token and extract userId
+  try {
+    const payload = verifyAccessToken(token);
+    req.userId = payload.userId;
+  } catch (error) {
+    // Token verification failed, but we don't return an error
+    // Just continue without userId
+  }
+  
+  next();
+}

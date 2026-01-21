@@ -13,6 +13,8 @@ import {
   logoutSchema
 } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticateToken } from '../middleware/auth';
+import { User } from '../models/User';
 
 const router = Router();
 
@@ -113,6 +115,36 @@ router.post('/logout', validateRequest(logoutSchema), asyncHandler(async (req: R
   await logout(refreshToken);
 
   res.status(200).json({ message: 'Logged out successfully' });
+}));
+
+/**
+ * GET /api/auth/me
+ * Get current authenticated user's information
+ * 
+ * Headers:
+ * - Authorization: Bearer <accessToken>
+ * 
+ * Response:
+ * - 200: { user: { _id, username, email, created_at } }
+ * - 401: { error: string } - Not authenticated or invalid token
+ */
+router.get('/me', authenticateToken, asyncHandler(async (req: Request, res: Response) => {
+  // userId is set by authenticateToken middleware
+  const user = await User.findById(req.userId).select('-password_hash');
+
+  if (!user) {
+    res.status(404).json({ error: 'User not found' });
+    return;
+  }
+
+  res.status(200).json({
+    user: {
+      _id: user._id.toString(),
+      username: user.username,
+      email: user.email,
+      created_at: user.created_at.toISOString()
+    }
+  });
 }));
 
 export default router;

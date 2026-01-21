@@ -66,13 +66,15 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
 
     // Calculate optimistic update
     let pointsDelta = 0;
+    let newUserVote = direction;
 
     if (previousUserVote === 0) {
       // No vote → upvote or downvote
       pointsDelta = direction;
     } else if (previousUserVote === direction) {
-      // Same vote → no change (idempotent)
-      return;
+      // Same vote → toggle off (remove vote)
+      pointsDelta = -direction;
+      newUserVote = 0;
     } else {
       // Opposite vote → change by 2
       pointsDelta = direction - previousUserVote;
@@ -80,7 +82,7 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
 
     // Apply optimistic update
     setLocalPoints(previousPoints + pointsDelta);
-    setLocalUserVote(direction);
+    setLocalUserVote(newUserVote);
     setIsVoting(true);
 
     try {

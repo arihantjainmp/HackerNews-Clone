@@ -31,6 +31,7 @@ export interface Post {
   points: number;
   comment_count: number;
   created_at: string; // ISO 8601 date string
+  userVote?: number; // -1, 0, or 1 (only present when user is authenticated)
 }
 
 /**

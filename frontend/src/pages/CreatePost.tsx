@@ -173,15 +173,14 @@ const CreatePost: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 sm:py-12 px-3 sm:px-4 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Submit a Post</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Share an interesting link or start a discussion
-          </p>
-        </div>
+    <div className="max-w-2xl mx-auto">
+      {/* Header */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Submit a Post</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Share an interesting link or start a discussion
+        </p>
+      </div>
 
         {/* Form */}
         <div className="bg-white shadow-sm rounded-lg p-4 sm:p-6">
@@ -380,7 +379,6 @@ const CreatePost: React.FC = () => {
             </div>
           </form>
         </div>
-      </div>
     </div>
   );
 };

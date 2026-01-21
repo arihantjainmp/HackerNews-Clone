@@ -157,14 +157,18 @@ apiClient.interceptors.response.use(
 
     // Check if error is 401 and we haven't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Check if this is the refresh endpoint itself failing
-      if (originalRequest.url?.includes('/auth/refresh')) {
-        // Refresh token is invalid - clear tokens and redirect to login
-        clearStoredTokens();
+      // Check if this is an auth endpoint (login, signup, refresh) - don't try to refresh token
+      if (originalRequest.url?.includes('/auth/login') || 
+          originalRequest.url?.includes('/auth/signup') ||
+          originalRequest.url?.includes('/auth/refresh')) {
+        // These are authentication endpoints - pass through the error
+        if (originalRequest.url?.includes('/auth/refresh')) {
+          // Only clear tokens and redirect for refresh endpoint
+          clearStoredTokens();
 
-        // Redirect to login page
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
         }
 
         return Promise.reject(error);

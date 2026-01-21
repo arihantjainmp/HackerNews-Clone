@@ -2,11 +2,11 @@
  * CommentThread Component Tests
  *
  * Tests for the CommentThread recursive component functionality
- * Requirements: 10.1, 10.2
+ * Requirements: 10.1, 10.2, 22.2
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { CommentThread } from '../CommentThread';
 import type { CommentNode, Comment, User } from '../../types';
@@ -360,6 +360,232 @@ describe('CommentThread', () => {
       // Upvote button should be highlighted
       const upvoteButton = screen.getByLabelText('Upvote');
       expect(upvoteButton).toHaveClass('text-orange-500');
+    });
+  });
+
+  describe('Pagination - Requirement 22.2', () => {
+    it('should initially show only first 5 comments when there are more than 5', () => {
+      // Create 10 comments
+      const nodes = Array.from({ length: 10 }, (_, i) =>
+        createCommentNode(
+          createTestComment({
+            _id: `comment${i}`,
+            content: `Comment ${i}`,
+          })
+        )
+      );
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // First 5 should be visible
+      for (let i = 0; i < 5; i++) {
+        expect(screen.getByText(`Comment ${i}`)).toBeInTheDocument();
+      }
+
+      // Comments 5-9 should not be visible initially
+      for (let i = 5; i < 10; i++) {
+        expect(screen.queryByText(`Comment ${i}`)).not.toBeInTheDocument();
+      }
+
+      // Load more button should be visible
+      expect(screen.getByText(/Load.*more comments/)).toBeInTheDocument();
+    });
+
+    it('should load more comments when "Load more" button is clicked', async () => {
+      // Create 15 comments
+      const nodes = Array.from({ length: 15 }, (_, i) =>
+        createCommentNode(
+          createTestComment({
+            _id: `comment${i}`,
+            content: `Comment ${i}`,
+          })
+        )
+      );
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // Initially only 5 visible
+      expect(screen.getByText('Comment 0')).toBeInTheDocument();
+      expect(screen.queryByText('Comment 5')).not.toBeInTheDocument();
+
+      // Click load more
+      const loadMoreButton = screen.getByText(/Load.*more comments/);
+      fireEvent.click(loadMoreButton);
+
+      // Now 15 comments should be visible (5 + 10)
+      await waitFor(() => {
+        expect(screen.getByText('Comment 5')).toBeInTheDocument();
+        expect(screen.getByText('Comment 14')).toBeInTheDocument();
+      });
+
+      // Load more button should not be visible anymore
+      expect(screen.queryByText(/Load.*more comments/)).not.toBeInTheDocument();
+    });
+
+    it('should not show "Load more" button when there are 5 or fewer comments', () => {
+      // Create 3 comments
+      const nodes = Array.from({ length: 3 }, (_, i) =>
+        createCommentNode(
+          createTestComment({
+            _id: `comment${i}`,
+            content: `Comment ${i}`,
+          })
+        )
+      );
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // All comments should be visible
+      expect(screen.getByText('Comment 0')).toBeInTheDocument();
+      expect(screen.getByText('Comment 1')).toBeInTheDocument();
+      expect(screen.getByText('Comment 2')).toBeInTheDocument();
+
+      // Load more button should not be visible
+      expect(screen.queryByText(/Load.*more comments/)).not.toBeInTheDocument();
+    });
+
+    it('should show correct count in "Load more" button', () => {
+      // Create 8 comments (5 visible, 3 remaining)
+      const nodes = Array.from({ length: 8 }, (_, i) =>
+        createCommentNode(
+          createTestComment({
+            _id: `comment${i}`,
+            content: `Comment ${i}`,
+          })
+        )
+      );
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // Should show "Load 3 more comments"
+      expect(screen.getByText('Load 3 more comments...')).toBeInTheDocument();
+    });
+  });
+
+  describe('Deep Nesting Optimization - Requirement 22.2', () => {
+    it('should show "Continue thread" link for deeply nested comments (depth >= 8)', () => {
+      // Create 10 levels of nesting (depths 0-9)
+      // At depth 8, we should show "Continue thread"
+      let currentNode: CommentNode | null = null;
+
+      for (let i = 10; i >= 1; i--) {
+        const comment = createTestComment({
+          _id: `level${i}`,
+          content: `Level ${i}`,
+          parent_id: i > 1 ? `level${i - 1}` : null,
+        });
+
+        currentNode = createCommentNode(comment, currentNode ? [currentNode] : []);
+      }
+
+      const nodes = currentNode ? [currentNode] : [];
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // First 8 levels should be visible (depths 0-7)
+      for (let i = 1; i <= 8; i++) {
+        expect(screen.getByText(`Level ${i}`)).toBeInTheDocument();
+      }
+
+      // Levels 9 and 10 should not be visible initially (depths 8-9)
+      expect(screen.queryByText('Level 9')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 10')).not.toBeInTheDocument();
+
+      // "Continue thread" link should be visible
+      expect(screen.getByText(/Continue thread/)).toBeInTheDocument();
+    });
+
+    it('should expand deeply nested thread when "Continue thread" is clicked', async () => {
+      // Create 11 levels of nesting (depths 0-10)
+      let currentNode: CommentNode | null = null;
+
+      for (let i = 11; i >= 1; i--) {
+        const comment = createTestComment({
+          _id: `level${i}`,
+          content: `Level ${i}`,
+          parent_id: i > 1 ? `level${i - 1}` : null,
+        });
+
+        currentNode = createCommentNode(comment, currentNode ? [currentNode] : []);
+      }
+
+      const nodes = currentNode ? [currentNode] : [];
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // Levels 9, 10, 11 should not be visible initially (depths 8-10)
+      expect(screen.queryByText('Level 9')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 10')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 11')).not.toBeInTheDocument();
+
+      // Click "Continue thread"
+      const continueButton = screen.getByText(/Continue thread/);
+      fireEvent.click(continueButton);
+
+      // Now levels 9, 10, 11 should be visible
+      await waitFor(() => {
+        expect(screen.getByText('Level 9')).toBeInTheDocument();
+        expect(screen.getByText('Level 10')).toBeInTheDocument();
+        expect(screen.getByText('Level 11')).toBeInTheDocument();
+      });
+    });
+
+    it('should show correct reply count in "Continue thread" link', () => {
+      // Create a comment at depth 8 with 3 replies
+      const reply3 = createTestComment({ _id: 'r3', content: 'Reply 3', parent_id: 'level8' });
+      const reply2 = createTestComment({ _id: 'r2', content: 'Reply 2', parent_id: 'level8' });
+      const reply1 = createTestComment({ _id: 'r1', content: 'Reply 1', parent_id: 'level8' });
+
+      // Create 8 levels of nesting
+      let currentNode: CommentNode = createCommentNode(
+        createTestComment({ _id: 'level8', content: 'Level 8' }),
+        [createCommentNode(reply1), createCommentNode(reply2), createCommentNode(reply3)]
+      );
+
+      for (let i = 7; i >= 1; i--) {
+        const comment = createTestComment({
+          _id: `level${i}`,
+          content: `Level ${i}`,
+          parent_id: i > 1 ? `level${i - 1}` : null,
+        });
+
+        currentNode = createCommentNode(comment, [currentNode]);
+      }
+
+      const nodes = [currentNode];
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // Should show "Continue thread (3 replies)"
+      expect(screen.getByText('Continue thread (3 replies)')).toBeInTheDocument();
+    });
+
+    it('should handle singular "reply" text correctly', () => {
+      // Create a comment at depth 8 with 1 reply
+      const reply = createTestComment({ _id: 'r1', content: 'Reply 1', parent_id: 'level8' });
+
+      // Create 8 levels of nesting
+      let currentNode: CommentNode = createCommentNode(
+        createTestComment({ _id: 'level8', content: 'Level 8' }),
+        [createCommentNode(reply)]
+      );
+
+      for (let i = 7; i >= 1; i--) {
+        const comment = createTestComment({
+          _id: `level${i}`,
+          content: `Level ${i}`,
+          parent_id: i > 1 ? `level${i - 1}` : null,
+        });
+
+        currentNode = createCommentNode(comment, [currentNode]);
+      }
+
+      const nodes = [currentNode];
+
+      renderWithRouter(<CommentThread comments={nodes} />);
+
+      // Should show "Continue thread (1 reply)" not "replies"
+      expect(screen.getByText('Continue thread (1 reply)')).toBeInTheDocument();
     });
   });
 });
