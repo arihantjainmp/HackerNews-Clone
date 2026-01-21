@@ -1,5 +1,6 @@
 import { Post, IPost } from '../models/Post';
 import { Types } from 'mongoose';
+import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
 
 /**
  * Post Service
@@ -280,20 +281,39 @@ export async function getPostById(postId: string): Promise<IPostResponse> {
 export async function createPost(data: ICreatePostData): Promise<IPostResponse> {
   const { title, url, text, authorId } = data;
 
-  // Validate title is not empty or only whitespace
-  if (!title || title.trim().length === 0) {
+  // Sanitize title to prevent XSS attacks
+  const sanitizedTitle = sanitizeText(title);
+
+  // Validate title is not empty or only whitespace after sanitization
+  if (!sanitizedTitle || sanitizedTitle.trim().length === 0) {
     throw new ValidationError('Title cannot be empty or contain only whitespace');
   }
 
   // Validate title length (1-300 characters)
-  const trimmedTitle = title.trim();
+  const trimmedTitle = sanitizedTitle.trim();
   if (trimmedTitle.length < 1 || trimmedTitle.length > 300) {
     throw new ValidationError('Title must be between 1 and 300 characters');
   }
 
+  // Sanitize and validate url and text
+  let sanitizedUrl: string | undefined;
+  let sanitizedText: string | undefined;
+
+  if (url && url.trim()) {
+    sanitizedUrl = sanitizeUrl(url.trim());
+    // If URL was sanitized to empty string, it was dangerous
+    if (!sanitizedUrl) {
+      throw new ValidationError('Invalid or unsafe URL provided');
+    }
+  }
+
+  if (text && text.trim()) {
+    sanitizedText = sanitizeText(text.trim());
+  }
+
   // Validate exactly one of url or text is provided
-  const hasUrl = Boolean(url && url.trim());
-  const hasText = Boolean(text && text.trim());
+  const hasUrl = Boolean(sanitizedUrl);
+  const hasText = Boolean(sanitizedText);
 
   if (hasUrl && hasText) {
     throw new ValidationError('Post must have either url or text, but not both');
@@ -304,15 +324,15 @@ export async function createPost(data: ICreatePostData): Promise<IPostResponse> 
   }
 
   try {
-    // Create post in database
+    // Create post in database with sanitized content
     // The Post model's pre-validation hook will:
     // - Set type based on url/text presence
     // - Validate URL format if provided
     // - Initialize points to 0 and comment_count to 0 (via schema defaults)
     const post = await Post.create({
       title: trimmedTitle,
-      url: hasUrl ? url!.trim() : undefined,
-      text: hasText ? text!.trim() : undefined,
+      url: sanitizedUrl,
+      text: sanitizedText,
       author_id: new Types.ObjectId(authorId),
       // points and comment_count are initialized to 0 by schema defaults
       // created_at is set to current timestamp by schema default

@@ -474,6 +474,68 @@ describe('Post Endpoints Integration Tests', () => {
 
       expect(response.body.post.title).toBe('Test Post');
     });
+
+    it('should sanitize HTML from post title to prevent XSS', async () => {
+      const response = await request(app)
+        .post('/api/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: '<script>alert("XSS")</script>Test Post',
+          url: 'https://example.com'
+        })
+        .expect(201);
+
+      // HTML tags should be stripped
+      expect(response.body.post.title).toBe('Test Post');
+      expect(response.body.post.title).not.toContain('<script>');
+      expect(response.body.post.title).not.toContain('</script>');
+    });
+
+    it('should sanitize HTML from post text content to prevent XSS', async () => {
+      const response = await request(app)
+        .post('/api/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'Test Post',
+          text: '<img src=x onerror="alert(1)">Safe content'
+        })
+        .expect(201);
+
+      // HTML tags should be stripped
+      expect(response.body.post.text).toBe('Safe content');
+      expect(response.body.post.text).not.toContain('<img');
+      expect(response.body.post.text).not.toContain('onerror');
+    });
+
+    it('should reject dangerous URLs with javascript: protocol', async () => {
+      const response = await request(app)
+        .post('/api/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'Test Post',
+          url: 'javascript:alert(1)'
+        })
+        .expect(400);
+
+      // Joi validation catches dangerous protocols
+      expect(response.body).toHaveProperty('errors');
+      expect(response.body.errors[0].message).toContain('not allowed for security');
+    });
+
+    it('should reject dangerous URLs with data: protocol', async () => {
+      const response = await request(app)
+        .post('/api/posts')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          title: 'Test Post',
+          url: 'data:text/html,<script>alert(1)</script>'
+        })
+        .expect(400);
+
+      // Joi validation catches dangerous protocols
+      expect(response.body).toHaveProperty('errors');
+      expect(response.body.errors[0].message).toContain('not allowed for security');
+    });
   });
 
   describe('GET /api/posts/:id', () => {

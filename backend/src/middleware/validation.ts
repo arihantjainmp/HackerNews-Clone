@@ -146,7 +146,7 @@ export const voteSchema = Joi.object({
 
 /**
  * Create post validation schema
- * Requirements: 3.9
+ * Requirements: 3.9, 12.2 (XSS prevention)
  */
 export const createPostSchema = Joi.object({
   title: Joi.string()
@@ -161,11 +161,37 @@ export const createPostSchema = Joi.object({
       'any.required': 'Title is required',
     }),
   url: Joi.string()
-    .uri()
     .trim()
     .optional()
+    .custom((value, helpers) => {
+      // First check for dangerous protocols for XSS prevention
+      const lowerValue = value.toLowerCase();
+      const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
+      
+      for (const protocol of dangerousProtocols) {
+        if (lowerValue.startsWith(protocol)) {
+          return helpers.error('string.unsafeProtocol');
+        }
+      }
+      
+      // Only allow http and https
+      if (!lowerValue.startsWith('http://') && !lowerValue.startsWith('https://')) {
+        return helpers.error('string.invalidProtocol');
+      }
+      
+      // Basic URL validation
+      try {
+        new URL(value);
+      } catch {
+        return helpers.error('string.uri');
+      }
+      
+      return value;
+    })
     .messages({
       'string.uri': 'Please provide a valid URL',
+      'string.unsafeProtocol': 'URL protocol is not allowed for security reasons',
+      'string.invalidProtocol': 'URL must use http:// or https:// protocol',
     }),
   text: Joi.string()
     .max(10000)

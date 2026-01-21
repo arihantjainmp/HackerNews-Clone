@@ -162,6 +162,36 @@ describe('Comment Endpoints Integration Tests', () => {
 
       expect(response.body).toHaveProperty('error');
     });
+
+    it('should sanitize HTML from comment content to prevent XSS', async () => {
+      const response = await request(app)
+        .post(`/api/posts/${postId}/comments`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          content: '<script>alert("XSS")</script>Safe comment'
+        })
+        .expect(201);
+
+      // HTML tags should be stripped
+      expect(response.body.comment.content).toBe('Safe comment');
+      expect(response.body.comment.content).not.toContain('<script>');
+      expect(response.body.comment.content).not.toContain('</script>');
+    });
+
+    it('should sanitize event handlers from comment content', async () => {
+      const response = await request(app)
+        .post(`/api/posts/${postId}/comments`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          content: '<img src=x onerror="alert(1)">Safe comment'
+        })
+        .expect(201);
+
+      // HTML tags and event handlers should be stripped
+      expect(response.body.comment.content).toBe('Safe comment');
+      expect(response.body.comment.content).not.toContain('<img');
+      expect(response.body.comment.content).not.toContain('onerror');
+    });
   });
 
   describe('POST /api/comments/:commentId/replies', () => {
@@ -301,6 +331,21 @@ describe('Comment Endpoints Integration Tests', () => {
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
+    });
+
+    it('should sanitize HTML from edited comment content to prevent XSS', async () => {
+      const response = await request(app)
+        .put(`/api/comments/${commentId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          content: '<script>alert("XSS")</script>Updated safe content'
+        })
+        .expect(200);
+
+      // HTML tags should be stripped
+      expect(response.body.comment.content).toBe('Updated safe content');
+      expect(response.body.comment.content).not.toContain('<script>');
+      expect(response.body.comment.content).not.toContain('</script>');
     });
   });
 

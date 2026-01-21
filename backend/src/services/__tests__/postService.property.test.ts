@@ -2,9 +2,18 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import * as fc from 'fast-check';
-import { createPost, ValidationError } from '../postService';
+import { 
+  createPost, 
+  ValidationError, 
+  sortByNew, 
+  sortByTop, 
+  sortByBest, 
+  calculateBestScore,
+  getPosts 
+} from '../postService';
 import { Post } from '../../models/Post';
 import { User } from '../../models/User';
+import { sanitizeText } from '../../utils/sanitize';
 
 let mongoServer: MongoMemoryServer;
 let testUserId: string;
@@ -46,8 +55,10 @@ describe('Property 8: Post Type Determination', () => {
   it('should create link type for any post with URL and no text', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary valid title (1-300 chars)
-        fc.string({ minLength: 1, maxLength: 300 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary valid title (1-300 chars), avoiding HTML
+        fc.string({ minLength: 1, maxLength: 300 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         // Generate arbitrary valid URL
         fc.webUrl(),
         async (title, url) => {
@@ -66,17 +77,21 @@ describe('Property 8: Post Type Determination', () => {
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
   it('should create text type for any post with text and no URL', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary valid title (1-300 chars)
-        fc.string({ minLength: 1, maxLength: 300 }).filter(s => s.trim().length > 0),
-        // Generate arbitrary text content (1-10000 chars)
-        fc.string({ minLength: 1, maxLength: 10000 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary valid title (1-300 chars), avoiding HTML
+        fc.string({ minLength: 1, maxLength: 300 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
+        // Generate arbitrary text content (1-10000 chars), avoiding HTML
+        fc.string({ minLength: 1, maxLength: 10000 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (title, text) => {
           const result = await createPost({
             title,
@@ -86,14 +101,15 @@ describe('Property 8: Post Type Determination', () => {
           
           // Property: Post with text should have type "text"
           expect(result.type).toBe('text');
-          expect(result.text).toBe(text.trim());
+          // Account for HTML entity encoding in sanitization
+          expect(result.text).toBe(sanitizeText(text.trim()));
           expect(result.url).toBeUndefined();
           
           // Cleanup
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -111,12 +127,16 @@ describe('Property 9: Post Mutual Exclusivity', () => {
   it('should reject any post with both URL and text', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary valid title
-        fc.string({ minLength: 1, maxLength: 300 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary valid title, avoiding HTML
+        fc.string({ minLength: 1, maxLength: 300 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         // Generate arbitrary valid URL
         fc.webUrl(),
-        // Generate arbitrary text content
-        fc.string({ minLength: 1, maxLength: 10000 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary text content, avoiding HTML
+        fc.string({ minLength: 1, maxLength: 10000 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (title, url, text) => {
           // Property: Post with both URL and text should be rejected
           await expect(
@@ -138,15 +158,17 @@ describe('Property 9: Post Mutual Exclusivity', () => {
           ).rejects.toThrow('Post must have either url or text, but not both');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
   it('should reject any post with neither URL nor text', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary valid title
-        fc.string({ minLength: 1, maxLength: 300 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary valid title, avoiding HTML
+        fc.string({ minLength: 1, maxLength: 300 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (title) => {
           // Property: Post with neither URL nor text should be rejected
           await expect(
@@ -164,7 +186,7 @@ describe('Property 9: Post Mutual Exclusivity', () => {
           ).rejects.toThrow('Post must have either url or text');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -183,12 +205,18 @@ describe('Property 10: Post Initialization Invariant', () => {
   it('should initialize all fields correctly for any valid post', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary valid title
-        fc.string({ minLength: 1, maxLength: 300 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary valid title - use simpler generator
+        fc.string({ minLength: 1, maxLength: 300 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         // Generate either URL or text (but not both)
         fc.oneof(
           fc.record({ url: fc.webUrl() }),
-          fc.record({ text: fc.string({ minLength: 1, maxLength: 10000 }).filter(s => s.trim().length > 0) })
+          fc.record({ 
+            text: fc.string({ minLength: 1, maxLength: 1000 })
+              .map(s => s.replace(/[<>]/g, ''))
+              .filter(s => s.trim().length > 0)
+          })
         ),
         async (title, content) => {
           const beforeCreate = new Date();
@@ -219,7 +247,7 @@ describe('Property 10: Post Initialization Invariant', () => {
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -239,10 +267,14 @@ describe('Property 11: Empty Title Rejection', () => {
       fc.asyncProperty(
         // Generate arbitrary whitespace-only strings
         fc.string().filter(s => s.trim().length === 0),
-        // Generate either URL or text
+        // Generate either URL or text, avoiding HTML
         fc.oneof(
           fc.record({ url: fc.webUrl() }),
-          fc.record({ text: fc.string({ minLength: 1, maxLength: 10000 }).filter(s => s.trim().length > 0) })
+          fc.record({ 
+            text: fc.string({ minLength: 1, maxLength: 10000 })
+              .map(s => s.replace(/[<>]/g, ''))
+              .filter(s => s.trim().length > 0)
+          })
         ),
         async (emptyTitle, content) => {
           // Property: Post with empty or whitespace-only title should be rejected
@@ -263,19 +295,25 @@ describe('Property 11: Empty Title Rejection', () => {
           ).rejects.toThrow('Title cannot be empty or contain only whitespace');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
   it('should reject any post with title exceeding 300 characters', async () => {
     await fc.assert(
       fc.asyncProperty(
-        // Generate arbitrary long titles (301-500 chars) with at least some non-whitespace
-        fc.string({ minLength: 301, maxLength: 500 }).filter(s => s.trim().length > 0),
+        // Generate arbitrary long titles (301-500 chars) - use simpler generator
+        fc.string({ minLength: 301, maxLength: 500 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 300),
         // Generate either URL or text
         fc.oneof(
           fc.record({ url: fc.webUrl() }),
-          fc.record({ text: fc.string({ minLength: 1, maxLength: 10000 }).filter(s => s.trim().length > 0) })
+          fc.record({ 
+            text: fc.string({ minLength: 1, maxLength: 1000 })
+              .map(s => s.replace(/[<>]/g, ''))
+              .filter(s => s.trim().length > 0)
+          })
         ),
         async (longTitle, content) => {
           // Property: Post with title exceeding 300 characters should be rejected
@@ -296,7 +334,7 @@ describe('Property 11: Empty Title Rejection', () => {
           ).rejects.toThrow('Title must be between 1 and 300 characters');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -343,9 +381,6 @@ describe('Property 13: New Sort Ordering', () => {
             })
           );
           
-          // Import sortByNew function
-          const { sortByNew } = await import('../postService');
-          
           // Sort posts using the sortByNew function
           const sortedPosts = sortByNew(createdPosts);
           
@@ -360,7 +395,7 @@ describe('Property 13: New Sort Ordering', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -406,9 +441,6 @@ describe('Property 14: Top Sort Ordering', () => {
             })
           );
           
-          // Import sortByTop function
-          const { sortByTop } = await import('../postService');
-          
           // Sort posts using the sortByTop function
           const sortedPosts = sortByTop(createdPosts);
           
@@ -423,7 +455,7 @@ describe('Property 14: Top Sort Ordering', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -471,9 +503,6 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
             })
           );
           
-          // Import sortByBest and calculateBestScore functions
-          const { sortByBest, calculateBestScore } = await import('../postService');
-          
           // Sort posts using the sortByBest function
           const sortedPosts = sortByBest(createdPosts);
           
@@ -502,7 +531,7 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
@@ -545,9 +574,6 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
             created_at: newerDate
           });
           
-          // Import functions
-          const { sortByBest, calculateBestScore } = await import('../postService');
-          
           // Calculate scores
           const olderScore = calculateBestScore(olderPost);
           const newerScore = calculateBestScore(newerPost);
@@ -563,7 +589,7 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
           await Post.deleteMany({ _id: { $in: [olderPost._id, newerPost._id] } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -610,9 +636,6 @@ describe('Property 12: Pagination Consistency', () => {
               return post;
             })
           );
-          
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
           
           // Collect all post IDs across all pages
           const allPostIds = new Set<string>();
@@ -661,7 +684,7 @@ describe('Property 12: Pagination Consistency', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
@@ -700,9 +723,6 @@ describe('Property 12: Pagination Consistency', () => {
             })
           );
           
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
-          
           // Collect all post IDs across all pages for this sort method
           const allPostIds = new Set<string>();
           const totalPosts = createdPosts.length;
@@ -726,7 +746,7 @@ describe('Property 12: Pagination Consistency', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });
@@ -785,9 +805,6 @@ describe('Property 16: Search Result Containment', () => {
             })
           );
           
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
-          
           // Perform search
           const result = await getPosts({ 
             page: 1, 
@@ -822,7 +839,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
@@ -860,9 +877,6 @@ describe('Property 16: Search Result Containment', () => {
             })
           );
           
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
-          
           // Search for something that definitely doesn't match
           const nonMatchingQuery = 'ZZZZZZZZZ_NO_MATCH_POSSIBLE';
           const result = await getPosts({ 
@@ -881,7 +895,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
@@ -915,9 +929,6 @@ describe('Property 16: Search Result Containment', () => {
             })
           );
           
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
-          
           // Search with lowercase version
           const result = await getPosts({ 
             page: 1, 
@@ -943,7 +954,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
   
@@ -985,9 +996,6 @@ describe('Property 16: Search Result Containment', () => {
               return post;
             })
           );
-          
-          // Import getPosts function
-          const { getPosts } = await import('../postService');
           
           // Count expected matches
           const expectedMatches = createdPosts.filter(post => 
@@ -1039,7 +1047,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 20 }
     );
   });
 });

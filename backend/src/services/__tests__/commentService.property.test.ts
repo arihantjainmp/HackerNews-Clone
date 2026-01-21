@@ -91,7 +91,10 @@ describe('Comment Service - Property Tests', () => {
   it('Property 23: top-level comments should have parent_id = null', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        // Generate alphanumeric strings to avoid HTML that would be sanitized
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0), // Filter after removing HTML
         async (content) => {
           let user, post, comment;
           
@@ -150,8 +153,12 @@ describe('Comment Service - Property Tests', () => {
   it('Property 24: replies should have parent_id equal to parent comment ID', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (parentContent, replyContent) => {
           let user, post, parentComment, reply;
           
@@ -222,7 +229,11 @@ describe('Comment Service - Property Tests', () => {
   it('Property 25: comments should be initialized with correct default values', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        // Generate strings that won't be empty after sanitization
+        // Use alphanumeric strings to avoid HTML that would be sanitized away
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         fc.boolean(), // Whether to create a reply or top-level comment
         async (content, isReply) => {
           let user, post, comment, parentComment;
@@ -318,7 +329,9 @@ describe('Comment Service - Property Tests', () => {
       fc.asyncProperty(
         fc.array(
           fc.record({
-            content: fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+            content: fc.string({ minLength: 1, maxLength: 100 })
+              .map(s => s.replace(/[<>]/g, ''))
+              .filter(s => s.trim().length > 0), // Filter after removing HTML
             isReply: fc.boolean()
           }),
           { minLength: 1, maxLength: 10 }
@@ -483,8 +496,12 @@ describe('Comment Service - Property Tests', () => {
   it('Property 28: edited comments should have edited_at timestamp and updated content', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (originalContent, newContent) => {
           let user, post, comment;
           
@@ -511,8 +528,9 @@ describe('Comment Service - Property Tests', () => {
               comment_count: 0
             });
 
-            // Import comment functions
+            // Import comment functions and sanitization
             const { createComment, editComment } = await import('../commentService');
+            const { sanitizeText } = await import('../../utils/sanitize');
 
             // Create a comment
             comment = await createComment({
@@ -536,8 +554,10 @@ describe('Comment Service - Property Tests', () => {
 
             const afterEdit = Date.now();
 
-            // Property: Content should be updated to new value
-            expect(editedComment.content).toBe(newContent);
+            // Property: Content should be updated to sanitized new value
+            // Account for HTML sanitization
+            const expectedContent = sanitizeText(newContent);
+            expect(editedComment.content).toBe(expectedContent);
 
             // Property: edited_at should be set to current timestamp
             expect(editedComment.edited_at).toBeDefined();
@@ -574,7 +594,9 @@ describe('Comment Service - Property Tests', () => {
   it('Property 29: deleted comments should be soft deleted with is_deleted=true and content="[deleted]"', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         async (content) => {
           let user, post, comment, reply;
           
@@ -662,9 +684,13 @@ describe('Comment Service - Property Tests', () => {
   it('Property 30: deleted comments with replies should preserve structure and parent references', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+        fc.string({ minLength: 1, maxLength: 100 })
+          .map(s => s.replace(/[<>]/g, ''))
+          .filter(s => s.trim().length > 0),
         fc.array(
-          fc.string({ minLength: 1, maxLength: 100 }).filter(s => s.trim().length > 0),
+          fc.string({ minLength: 1, maxLength: 100 })
+            .map(s => s.replace(/[<>]/g, ''))
+            .filter(s => s.trim().length > 0),
           { minLength: 1, maxLength: 5 }
         ),
         async (parentContent, replyContents) => {

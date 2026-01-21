@@ -2,6 +2,7 @@ import { Comment, IComment } from '../models/Comment';
 import { Post } from '../models/Post';
 import { Types } from 'mongoose';
 import mongoose from 'mongoose';
+import { sanitizeText } from '../utils/sanitize';
 
 /**
  * Comment Service
@@ -99,24 +100,31 @@ export function buildCommentTree(comments: IComment[]): ICommentNode[] {
 /**
  * Validate comment content
  * Ensures content is not empty/whitespace and within length constraints
+ * Also sanitizes content to prevent XSS attacks
  * 
  * @param content - The comment content to validate
+ * @returns Sanitized content
  * @throws ValidationError if content is invalid
  */
-function validateCommentContent(content: string): void {
-  // Check if content is empty or only whitespace
-  if (!content || content.trim().length === 0) {
+function validateAndSanitizeCommentContent(content: string): string {
+  // Sanitize content first to prevent XSS attacks
+  const sanitizedContent = sanitizeText(content);
+
+  // Check if content is empty or only whitespace after sanitization
+  if (!sanitizedContent || sanitizedContent.trim().length === 0) {
     throw new ValidationError('Comment content cannot be empty or only whitespace');
   }
 
   // Check length constraints (1-10000 characters)
-  if (content.length < 1) {
+  if (sanitizedContent.length < 1) {
     throw new ValidationError('Comment content must be at least 1 character');
   }
 
-  if (content.length > 10000) {
+  if (sanitizedContent.length > 10000) {
     throw new ValidationError('Comment content must not exceed 10000 characters');
   }
+
+  return sanitizedContent;
 }
 
 /**
@@ -138,8 +146,8 @@ export async function createComment(data: {
 }): Promise<IComment> {
   const { content, postId, authorId } = data;
 
-  // Validate content
-  validateCommentContent(content);
+  // Validate and sanitize content
+  const sanitizedContent = validateAndSanitizeCommentContent(content);
 
   // Validate ObjectIds
   if (!Types.ObjectId.isValid(postId)) {
@@ -157,7 +165,7 @@ export async function createComment(data: {
 
   // Create the comment with parent_id = null (top-level comment)
   const comment = new Comment({
-    content,
+    content: sanitizedContent,
     post_id: new Types.ObjectId(postId),
     parent_id: null,
     author_id: new Types.ObjectId(authorId),
@@ -199,8 +207,8 @@ export async function createReply(data: {
 }): Promise<IComment> {
   const { content, parentId, postId, authorId } = data;
 
-  // Validate content
-  validateCommentContent(content);
+  // Validate and sanitize content
+  const sanitizedContent = validateAndSanitizeCommentContent(content);
 
   // Validate ObjectIds
   if (!Types.ObjectId.isValid(parentId)) {
@@ -227,7 +235,7 @@ export async function createReply(data: {
 
   // Create the reply with parent_id set to parent comment ID
   const reply = new Comment({
-    content,
+    content: sanitizedContent,
     post_id: new Types.ObjectId(postId),
     parent_id: new Types.ObjectId(parentId),
     author_id: new Types.ObjectId(authorId),
@@ -267,8 +275,8 @@ export async function editComment(
   content: string,
   userId: string
 ): Promise<IComment> {
-  // Validate content
-  validateCommentContent(content);
+  // Validate and sanitize content
+  const sanitizedContent = validateAndSanitizeCommentContent(content);
 
   // Validate ObjectIds
   if (!Types.ObjectId.isValid(commentId)) {
@@ -290,7 +298,7 @@ export async function editComment(
   }
 
   // Update content and set edited_at timestamp
-  comment.content = content;
+  comment.content = sanitizedContent;
   comment.edited_at = new Date();
 
   await comment.save();
