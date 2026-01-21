@@ -1,8 +1,8 @@
 /**
  * ProtectedRoute Component Tests
- * 
+ *
  * Tests for the ProtectedRoute component that guards authenticated routes.
- * 
+ *
  * Requirements:
  * - 11.5: Redirect unauthenticated users to login page
  */
@@ -66,7 +66,7 @@ describe('ProtectedRoute', () => {
       // Check for loading spinner (it has specific classes)
       const spinner = document.querySelector('.animate-spin');
       expect(spinner).toBeInTheDocument();
-      
+
       // Protected content should not be visible
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
@@ -89,7 +89,7 @@ describe('ProtectedRoute', () => {
 
       // Protected content should not be visible
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
-      
+
       // Should show login page (Navigate component redirects)
       expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
@@ -117,7 +117,7 @@ describe('ProtectedRoute', () => {
 
       // Protected content should be visible
       expect(screen.getByText('Protected Content')).toBeInTheDocument();
-      
+
       // Login page should not be visible
       expect(screen.queryByText('Login Page')).not.toBeInTheDocument();
     });

@@ -1,6 +1,6 @@
 /**
  * AuthContext Tests
- * 
+ *
  * Basic tests for authentication context functionality
  */
 

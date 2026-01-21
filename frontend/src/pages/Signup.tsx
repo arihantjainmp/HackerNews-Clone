@@ -157,9 +157,7 @@ const Signup: React.FC = () => {
     } catch (error: any) {
       // Display error message from API
       const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        'Signup failed. Please try again.';
+        error.response?.data?.error || error.message || 'Signup failed. Please try again.';
       setServerError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -174,10 +172,7 @@ const Signup: React.FC = () => {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link
-            to="/login"
-            className="font-medium text-hn-orange hover:text-orange-700"
-          >
+          <Link to="/login" className="font-medium text-hn-orange hover:text-orange-700">
             sign in to your existing account
           </Link>
         </p>
@@ -191,9 +186,7 @@ const Signup: React.FC = () => {
               <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      {serverError}
-                    </h3>
+                    <h3 className="text-sm font-medium text-red-800">{serverError}</h3>
                   </div>
                 </div>
               </div>
@@ -201,10 +194,7 @@ const Signup: React.FC = () => {
 
             {/* Username Field */}
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
               </label>
               <div className="mt-1">
@@ -233,10 +223,7 @@ const Signup: React.FC = () => {
 
             {/* Email Field */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <div className="mt-1">
@@ -265,10 +252,7 @@ const Signup: React.FC = () => {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="mt-1">
@@ -290,8 +274,8 @@ const Signup: React.FC = () => {
                     errors.password
                       ? 'password-error'
                       : showPasswordRequirements
-                      ? 'password-requirements'
-                      : undefined
+                        ? 'password-requirements'
+                        : undefined
                   }
                 />
               </div>
@@ -303,31 +287,15 @@ const Signup: React.FC = () => {
 
               {/* Password Requirements Display */}
               {showPasswordRequirements && !errors.password && (
-                <div
-                  id="password-requirements"
-                  className="mt-2 p-3 bg-gray-50 rounded-md"
-                >
-                  <p className="text-xs font-medium text-gray-700 mb-2">
-                    Password must contain:
-                  </p>
+                <div id="password-requirements" className="mt-2 p-3 bg-gray-50 rounded-md">
+                  <p className="text-xs font-medium text-gray-700 mb-2">Password must contain:</p>
                   <ul className="space-y-1">
                     {passwordRequirements.map((req, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center text-xs"
-                      >
-                        <span
-                          className={`mr-2 ${
-                            req.met ? 'text-green-600' : 'text-gray-400'
-                          }`}
-                        >
+                      <li key={index} className="flex items-center text-xs">
+                        <span className={`mr-2 ${req.met ? 'text-green-600' : 'text-gray-400'}`}>
                           {req.met ? '✓' : '○'}
                         </span>
-                        <span
-                          className={
-                            req.met ? 'text-green-600' : 'text-gray-600'
-                          }
-                        >
+                        <span className={req.met ? 'text-green-600' : 'text-gray-600'}>
                           {req.label}
                         </span>
                       </li>

@@ -86,9 +86,7 @@ const Login: React.FC = () => {
     } catch (error: any) {
       // Display error message from API
       const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        'Login failed. Please try again.';
+        error.response?.data?.error || error.message || 'Login failed. Please try again.';
       setServerError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -103,10 +101,7 @@ const Login: React.FC = () => {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link
-            to="/signup"
-            className="font-medium text-hn-orange hover:text-orange-700"
-          >
+          <Link to="/signup" className="font-medium text-hn-orange hover:text-orange-700">
             create a new account
           </Link>
         </p>
@@ -120,9 +115,7 @@ const Login: React.FC = () => {
               <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      {serverError}
-                    </h3>
+                    <h3 className="text-sm font-medium text-red-800">{serverError}</h3>
                   </div>
                 </div>
               </div>
@@ -130,10 +123,7 @@ const Login: React.FC = () => {
 
             {/* Email Field */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
               </label>
               <div className="mt-1">
@@ -162,10 +152,7 @@ const Login: React.FC = () => {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="mt-1">

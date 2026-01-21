@@ -228,7 +228,9 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/password does not meet strength requirements/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password does not meet strength requirements/i)
+        ).toBeInTheDocument();
       });
 
       expect(mockSignup).not.toHaveBeenCalled();
@@ -248,7 +250,9 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/password does not meet strength requirements/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password does not meet strength requirements/i)
+        ).toBeInTheDocument();
       });
 
       expect(mockSignup).not.toHaveBeenCalled();
@@ -268,7 +272,9 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/password does not meet strength requirements/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password does not meet strength requirements/i)
+        ).toBeInTheDocument();
       });
 
       expect(mockSignup).not.toHaveBeenCalled();
@@ -288,7 +294,9 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/password does not meet strength requirements/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password does not meet strength requirements/i)
+        ).toBeInTheDocument();
       });
 
       expect(mockSignup).not.toHaveBeenCalled();
@@ -308,7 +316,9 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/password does not meet strength requirements/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password does not meet strength requirements/i)
+        ).toBeInTheDocument();
       });
 
       expect(mockSignup).not.toHaveBeenCalled();
@@ -387,9 +397,7 @@ describe('Signup Page', () => {
 
   describe('Loading State', () => {
     it('should show loading state during submission', async () => {
-      mockSignup.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockSignup.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       renderSignup();
 
@@ -414,9 +422,7 @@ describe('Signup Page', () => {
     });
 
     it('should prevent double submission', async () => {
-      mockSignup.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockSignup.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       renderSignup();
 
@@ -504,9 +510,7 @@ describe('Signup Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/signup failed\. please try again\./i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/signup failed\. please try again\./i)).toBeInTheDocument();
       });
     });
 

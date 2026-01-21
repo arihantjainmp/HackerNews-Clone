@@ -85,7 +85,7 @@ describe('AuthContext Property Tests', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockNavigate.mockClear();
-    
+
     // Default mock implementations
     vi.mocked(getStoredTokens).mockReturnValue(null);
     vi.mocked(setStoredTokens).mockImplementation(() => {});
@@ -107,30 +107,41 @@ describe('AuthContext Property Tests', () => {
   describe('Property 46: Token Storage on Login', () => {
     it('should store both access and refresh tokens for any successful login', async () => {
       await fc.assert(
-        fc.asyncProperty(authResponseArbitrary, emailArbitrary, passwordArbitrary, async (authResponse, email, password) => {
-          // Setup: Mock successful login
-          vi.mocked(authApi.login).mockResolvedValue(authResponse);
-          vi.mocked(getStoredTokens).mockReturnValue(null);
+        fc.asyncProperty(
+          authResponseArbitrary,
+          emailArbitrary,
+          passwordArbitrary,
+          async (authResponse, email, password) => {
+            // Setup: Mock successful login that calls setStoredTokens
+            vi.mocked(authApi.login).mockImplementation(async () => {
+              setStoredTokens({
+                accessToken: authResponse.accessToken,
+                refreshToken: authResponse.refreshToken,
+              });
+              return authResponse;
+            });
+            vi.mocked(getStoredTokens).mockReturnValue(null);
 
-          // Render hook
-          const { result } = renderHook(() => useAuth(), { wrapper });
+            // Render hook
+            const { result } = renderHook(() => useAuth(), { wrapper });
 
-          // Wait for initial loading
-          await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
-          });
+            // Wait for initial loading
+            await waitFor(() => {
+              expect(result.current.isLoading).toBe(false);
+            });
 
-          // Execute: Login
-          await act(async () => {
-            await result.current.login(email, password);
-          });
+            // Execute: Login
+            await act(async () => {
+              await result.current.login(email, password);
+            });
 
-          // Verify: setStoredTokens was called with both tokens
-          expect(setStoredTokens).toHaveBeenCalledWith({
-            accessToken: authResponse.accessToken,
-            refreshToken: authResponse.refreshToken,
-          });
-        }),
+            // Verify: setStoredTokens was called with both tokens
+            expect(setStoredTokens).toHaveBeenCalledWith({
+              accessToken: authResponse.accessToken,
+              refreshToken: authResponse.refreshToken,
+            });
+          }
+        ),
         { numRuns: 50 }
       );
     });
@@ -143,8 +154,14 @@ describe('AuthContext Property Tests', () => {
           emailArbitrary,
           passwordArbitrary,
           async (authResponse, username, email, password) => {
-            // Setup: Mock successful signup
-            vi.mocked(authApi.signup).mockResolvedValue(authResponse);
+            // Setup: Mock successful signup that calls setStoredTokens
+            vi.mocked(authApi.signup).mockImplementation(async () => {
+              setStoredTokens({
+                accessToken: authResponse.accessToken,
+                refreshToken: authResponse.refreshToken,
+              });
+              return authResponse;
+            });
             vi.mocked(getStoredTokens).mockReturnValue(null);
 
             // Render hook
@@ -486,36 +503,41 @@ describe('AuthContext Property Tests', () => {
   describe('Token Consistency Property', () => {
     it('should maintain consistency between authentication state and stored tokens', async () => {
       await fc.assert(
-        fc.asyncProperty(authResponseArbitrary, emailArbitrary, passwordArbitrary, async (authResponse, email, password) => {
-          // Setup
-          vi.mocked(authApi.login).mockResolvedValue(authResponse);
-          vi.mocked(getStoredTokens).mockReturnValue(null);
+        fc.asyncProperty(
+          authResponseArbitrary,
+          emailArbitrary,
+          passwordArbitrary,
+          async (authResponse, email, password) => {
+            // Setup
+            vi.mocked(authApi.login).mockResolvedValue(authResponse);
+            vi.mocked(getStoredTokens).mockReturnValue(null);
 
-          const { result } = renderHook(() => useAuth(), { wrapper });
+            const { result } = renderHook(() => useAuth(), { wrapper });
 
-          await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
-          });
+            await waitFor(() => {
+              expect(result.current.isLoading).toBe(false);
+            });
 
-          // Login
-          await act(async () => {
-            await result.current.login(email, password);
-          });
+            // Login
+            await act(async () => {
+              await result.current.login(email, password);
+            });
 
-          // Verify: User is authenticated after login
-          expect(result.current.isAuthenticated).toBe(true);
-          expect(result.current.user).toEqual(authResponse.user);
+            // Verify: User is authenticated after login
+            expect(result.current.isAuthenticated).toBe(true);
+            expect(result.current.user).toEqual(authResponse.user);
 
-          // Logout
-          vi.mocked(authApi.logout).mockResolvedValue({ message: 'Success' });
-          await act(async () => {
-            await result.current.logout();
-          });
+            // Logout
+            vi.mocked(authApi.logout).mockResolvedValue({ message: 'Success' });
+            await act(async () => {
+              await result.current.logout();
+            });
 
-          // Verify: User is not authenticated after logout
-          expect(result.current.isAuthenticated).toBe(false);
-          expect(result.current.user).toBeNull();
-        }),
+            // Verify: User is not authenticated after logout
+            expect(result.current.isAuthenticated).toBe(false);
+            expect(result.current.user).toBeNull();
+          }
+        ),
         { numRuns: 50 }
       );
     });

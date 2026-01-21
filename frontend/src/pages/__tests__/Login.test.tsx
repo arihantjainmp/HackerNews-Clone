@@ -194,9 +194,7 @@ describe('Login Page', () => {
   describe('Loading State', () => {
     it('should show loading state during submission', async () => {
       // Mock login to delay resolution
-      mockLogin.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockLogin.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       renderLogin();
 
@@ -223,9 +221,7 @@ describe('Login Page', () => {
 
     it('should prevent double submission', async () => {
       // Mock login to delay resolution
-      mockLogin.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockLogin.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       renderLogin();
 
@@ -308,9 +304,7 @@ describe('Login Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/login failed\. please try again\./i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/login failed\. please try again\./i)).toBeInTheDocument();
       });
     });
 
