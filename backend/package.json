@@ -37,6 +37,7 @@
     "sanitize-html": "^2.11.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.2.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
