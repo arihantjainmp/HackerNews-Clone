@@ -90,7 +90,13 @@ apiClient.interceptors.response.use(
       ) {
         // If refresh fails, we are definitely logged out
         if (originalRequest.url?.includes('/auth/refresh')) {
-          if (typeof window !== 'undefined') {
+          // Only redirect if not already on auth page
+          const isAuthPage =
+            typeof window !== 'undefined' &&
+            (window.location.pathname.startsWith('/login') ||
+              window.location.pathname.startsWith('/signup'));
+
+          if (!isAuthPage && typeof window !== 'undefined') {
             window.location.href = '/login';
           }
         }
@@ -136,11 +142,20 @@ apiClient.interceptors.response.use(
         // Retry original request
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - redirect to login
+        // Refresh failed
         processQueue(refreshError as Error);
         isRefreshing = false;
 
-        if (typeof window !== 'undefined') {
+        // Redirect to login ONLY if:
+        // 1. It's not the /me endpoint (which just checks session)
+        // 2. We are not already on an auth page
+        const isAuthCheck = originalRequest.url?.includes('/auth/me');
+        const isAuthPage =
+          typeof window !== 'undefined' &&
+          (window.location.pathname.startsWith('/login') ||
+            window.location.pathname.startsWith('/signup'));
+
+        if (!isAuthCheck && !isAuthPage && typeof window !== 'undefined') {
           window.location.href = '/login';
         }
 
