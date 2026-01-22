@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import mongoSanitize from 'express-mongo-sanitize';
+import helmet from 'helmet';
 import { validateEnv } from './utils/validateEnv';
 import { errorHandler, rateLimiter, corsMiddleware, requestLogger } from './middleware';
 import logger from './utils/logger';
@@ -22,6 +23,9 @@ validateEnv();
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
+
+// Security headers middleware
+app.use(helmet());
 
 // Middleware
 app.use(express.json());
