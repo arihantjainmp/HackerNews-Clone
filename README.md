@@ -53,17 +53,6 @@ npm run dev
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API Base URL | `http://localhost:5000` |
 
-## 🤖 AI Tools Used
-
-This project was developed with the assistance of **Gemini AI Agent (CLI)**.
-
-**How AI Assisted Development:**
-1.  **Security Hardening**: The AI identified XSS vulnerabilities in the initial `localStorage` token implementation and refactored the entire authentication system to use **HttpOnly, Secure, and SameSite=Strict Cookies**.
-2.  **Vulnerability Mitigation**: Implemented **NoSQL Injection protection** using `express-mongo-sanitize` across all backend routes.
-3.  **Performance Optimization**: Refactored the dynamic "Best" sorting algorithm from a memory-heavy in-app sort to a high-performance **MongoDB Aggregation Pipeline**.
-4.  **Full-Stack Refactoring**: Harmonized frontend state management (`AuthContext`) and API clients to support the secure cookie architecture automatically.
-5.  **Quality Assurance**: Generated comprehensive test suites including **Property-Based Testing** (using `fast-check`) to verify business logic invariants.
-
 ## ✨ Features
 
 ### Core Features
@@ -82,3 +71,37 @@ This project was developed with the assistance of **Gemini AI Agent (CLI)**.
 
 ---
 *For detailed API specifications, please refer to [API.md](./API.md).*
+
+---
+
+## 🤖 AI Tools Used
+
+This project was developed with assistance from AI tools to accelerate development and ensure best practices:
+
+### Kiro AI Assistant
+- **Spec-Driven Development**: Used Kiro's spec workflow to create comprehensive requirements, design documents, and implementation tasks.
+- **Code Generation**: Generated boilerplate code, models, services, and API endpoints following the design specifications.
+- **Test Generation**: Created unit tests, integration tests, and property-based tests with fast-check.
+- **Code Review**: Received suggestions for improvements in error handling, validation, and security.
+- **Documentation**: Assisted in writing inline code comments and initial README structure.
+
+### Gemini AI Agent (CLI)
+- **Security Hardening**: Identified XSS vulnerabilities in the initial implementation and refactored the entire authentication system to use **HttpOnly, Secure, and SameSite=Strict Cookies**.
+- **Vulnerability Mitigation**: Implemented **NoSQL Injection protection** using `express-mongo-sanitize` across all backend routes.
+- **Performance Optimization**: Refactored the dynamic "Best" sorting algorithm to use a high-performance **MongoDB Aggregation Pipeline**, offloading complex calculations to the database layer.
+- **Full-Stack Refactoring**: Harmonized frontend state management (`AuthContext`) and API clients to support the secure cookie architecture.
+
+### Development Approach
+The project followed a spec-driven development methodology:
+- **Requirements Phase**: Defined 28 detailed requirements covering all features.
+- **Design Phase**: Created technical design with architecture diagrams, data models, and correctness properties.
+- **Implementation Phase**: Broke down work into 100+ incremental tasks with clear acceptance criteria.
+- **Testing Phase**: Implemented comprehensive test coverage including property-based tests.
+
+### Human Oversight
+While AI tools accelerated development, all code was:
+- Reviewed for correctness and security.
+- Tested thoroughly with automated tests.
+- Validated against requirements and refined based on best practices.
+
+The combination of AI assistance and human oversight enabled rapid development of a production-quality application with comprehensive testing and documentation.
