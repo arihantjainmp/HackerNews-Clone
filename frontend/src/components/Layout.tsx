@@ -44,13 +44,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="bg-orange-500 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
-            {/* Logo and Brand */}
+            {/* Brand */}
             <div className="flex items-center">
               <Link
                 to="/"
-                className="flex items-center space-x-2 text-white hover:text-orange-100 transition-colors"
+                className="text-white hover:text-orange-100 transition-colors"
               >
-                <div className="w-6 h-6 bg-white border-2 border-white transform rotate-45" />
                 <span className="font-bold text-lg hidden sm:inline">Hacker News Clone</span>
                 <span className="font-bold text-lg sm:hidden">HN</span>
               </Link>
