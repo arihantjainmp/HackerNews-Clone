@@ -46,9 +46,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-between items-center h-14">
             {/* Brand */}
             <div className="flex items-center">
-              <Link to="/" className="text-white hover:text-orange-100 transition-colors">
-                <span className="font-bold text-lg hidden sm:inline">Hacker News Clone</span>
-                <span className="font-bold text-lg sm:hidden">HN</span>
+              <Link
+                to="/"
+                className="flex items-center text-white hover:text-orange-100 transition-colors group"
+              >
+                <div className="w-8 h-8 flex items-center justify-center bg-white text-orange-500 font-bold mr-3 rounded-sm text-sm border-2 border-white group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors">
+                  HN
+                </div>
+                <span className="font-bold text-lg tracking-tight">Hacker News</span>
               </Link>
             </div>
 
@@ -197,7 +202,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-gray-500 text-sm">
-            <p>Hacker News Clone - Built with React, TypeScript, and Express</p>
+            <p>Hacker News - Built with React, TypeScript, and Express</p>
           </div>
         </div>
       </footer>

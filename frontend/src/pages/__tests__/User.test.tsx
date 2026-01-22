@@ -232,7 +232,7 @@ describe('User Page', () => {
     );
 
     await waitFor(() => {
-      expect(document.title).toBe('testuser - Hacker News Clone');
+      expect(document.title).toBe('testuser - Hacker News');
     });
   });
 });

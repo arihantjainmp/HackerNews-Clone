@@ -51,8 +51,11 @@ describe('Layout Component', () => {
         </BrowserRouter>
       );
 
-      // Check for brand name (desktop version)
-      expect(screen.getByText('Hacker News Clone')).toBeInTheDocument();
+      // Check for logo
+      expect(screen.getByText('HN')).toBeInTheDocument();
+
+      // Check for brand name
+      expect(screen.getByText('Hacker News')).toBeInTheDocument();
     });
 
     it('should render login and signup links when not authenticated', () => {

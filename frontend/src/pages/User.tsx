@@ -40,7 +40,7 @@ export const User: React.FC = () => {
       try {
         const data = await getUserProfile(username);
         setProfile(data);
-        document.title = `${username} - Hacker News Clone`;
+        document.title = `${username} - Hacker News`;
       } catch (err: any) {
         if (err.response?.status === 404) {
           setError('User not found');

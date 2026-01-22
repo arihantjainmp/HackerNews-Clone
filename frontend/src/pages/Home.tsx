@@ -36,7 +36,7 @@ export const Home: React.FC = () => {
    * Requirement 17.3: Set page title
    */
   useEffect(() => {
-    document.title = 'Hacker News Clone';
+    document.title = 'Hacker News';
   }, []);
 
   /**
