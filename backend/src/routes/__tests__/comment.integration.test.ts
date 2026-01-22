@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import express, { Application } from 'express';
+import cookieParser from 'cookie-parser';
 import authRoutes from '../auth';
 import commentRoutes from '../comment';
 import { User } from '../../models/User';
@@ -22,12 +23,12 @@ let mongoServer: MongoMemoryServer;
 let app: Application;
 
 describe('Comment Endpoints Integration Tests', () => {
-  let authToken: string;
+  let userCookie: string;
   let userId: string;
   let postId: string;
   let commentId: string;
   let anotherUserId: string;
-  let anotherAuthToken: string;
+  let anotherUserCookie: string;
 
   beforeAll(async () => {
     // Set up environment variables for JWT
@@ -42,6 +43,7 @@ describe('Comment Endpoints Integration Tests', () => {
     // Set up Express app with routes
     app = express();
     app.use(express.json());
+    app.use(cookieParser());
     app.use('/api/auth', authRoutes);
     app.use('/api', commentRoutes);
     app.use(errorHandler);
@@ -67,7 +69,11 @@ describe('Comment Endpoints Integration Tests', () => {
         email: 'test@example.com',
         password: 'Test1234!'
       });
-    authToken = signupResponse.body.accessToken;
+    
+    const cookies1 = signupResponse.headers['set-cookie'];
+    const tokenCookie1 = cookies1.find((c: string) => c.startsWith('access_token='));
+    if (!tokenCookie1) throw new Error('Access token cookie not found');
+    userCookie = tokenCookie1;
     userId = signupResponse.body.user._id;
 
     // Create and authenticate second user
@@ -78,7 +84,11 @@ describe('Comment Endpoints Integration Tests', () => {
         email: 'another@example.com',
         password: 'Test1234!'
       });
-    anotherAuthToken = anotherSignupResponse.body.accessToken;
+    
+    const cookies2 = anotherSignupResponse.headers['set-cookie'];
+    const tokenCookie2 = cookies2.find((c: string) => c.startsWith('access_token='));
+    if (!tokenCookie2) throw new Error('Access token cookie not found');
+    anotherUserCookie = tokenCookie2;
     anotherUserId = anotherSignupResponse.body.user._id;
 
     // Create a test post
@@ -97,7 +107,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should create a top-level comment successfully', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'This is a test comment'
         })
@@ -130,7 +140,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should reject comment with empty content', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: '   '
         })
@@ -143,7 +153,7 @@ describe('Comment Endpoints Integration Tests', () => {
       const longContent = 'a'.repeat(10001);
       const response = await request(app)
         .post(`/api/posts/${postId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: longContent
         })
@@ -156,7 +166,7 @@ describe('Comment Endpoints Integration Tests', () => {
       const fakePostId = new mongoose.Types.ObjectId().toString();
       const response = await request(app)
         .post(`/api/posts/${fakePostId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'This is a test comment'
         })
@@ -168,7 +178,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should sanitize HTML from comment content to prevent XSS', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: '<script>alert("XSS")</script>Safe comment'
         })
@@ -183,7 +193,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should sanitize event handlers from comment content', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: '<img src=x onerror="alert(1)">Safe comment'
         })
@@ -216,7 +226,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should create a reply successfully', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/replies`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'This is a reply'
         })
@@ -248,7 +258,7 @@ describe('Comment Endpoints Integration Tests', () => {
       const fakeCommentId = new mongoose.Types.ObjectId().toString();
       const response = await request(app)
         .post(`/api/comments/${fakeCommentId}/replies`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'This is a reply'
         })
@@ -275,7 +285,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should edit own comment successfully', async () => {
       const response = await request(app)
         .put(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'Updated content'
         })
@@ -300,7 +310,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should reject editing another user\'s comment', async () => {
       const response = await request(app)
         .put(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${anotherAuthToken}`)
+        .set('Cookie', [anotherUserCookie])
         .send({
           content: 'Updated content'
         })
@@ -313,7 +323,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should reject edit with empty content', async () => {
       const response = await request(app)
         .put(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: '   '
         })
@@ -326,7 +336,7 @@ describe('Comment Endpoints Integration Tests', () => {
       const fakeCommentId = new mongoose.Types.ObjectId().toString();
       const response = await request(app)
         .put(`/api/comments/${fakeCommentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: 'Updated content'
         })
@@ -338,7 +348,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should sanitize HTML from edited comment content to prevent XSS', async () => {
       const response = await request(app)
         .put(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .send({
           content: '<script>alert("XSS")</script>Updated safe content'
         })
@@ -371,7 +381,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should hard delete comment without replies', async () => {
       const response = await request(app)
         .delete(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -398,7 +408,7 @@ describe('Comment Endpoints Integration Tests', () => {
 
       const response = await request(app)
         .delete(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .expect(200);
 
       expect(response.body).toHaveProperty('message');
@@ -425,7 +435,7 @@ describe('Comment Endpoints Integration Tests', () => {
     it('should reject deleting another user\'s comment', async () => {
       const response = await request(app)
         .delete(`/api/comments/${commentId}`)
-        .set('Authorization', `Bearer ${anotherAuthToken}`)
+        .set('Cookie', [anotherUserCookie])
         .expect(403);
 
       expect(response.body).toHaveProperty('error');
@@ -436,7 +446,7 @@ describe('Comment Endpoints Integration Tests', () => {
       const fakeCommentId = new mongoose.Types.ObjectId().toString();
       const response = await request(app)
         .delete(`/api/comments/${fakeCommentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set('Cookie', [userCookie])
         .expect(404);
 
       expect(response.body).toHaveProperty('error');

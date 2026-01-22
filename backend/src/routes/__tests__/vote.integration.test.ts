@@ -3,6 +3,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import express, { Application } from 'express';
+import cookieParser from 'cookie-parser';
 import authRoutes from '../auth';
 import voteRoutes from '../vote';
 import { User } from '../../models/User';
@@ -28,6 +29,7 @@ beforeAll(async () => {
   // Set up Express app with routes
   app = express();
   app.use(express.json());
+  app.use(cookieParser());
   app.use('/api/auth', authRoutes);
   app.use('/api', voteRoutes);
   app.use(errorHandler);
@@ -49,7 +51,7 @@ beforeEach(async () => {
 
 describe('Vote Endpoints Integration Tests', () => {
   describe('POST /api/posts/:id/vote', () => {
-    let accessToken: string;
+    let sessionCookie: string;
     let userId: string;
     let postId: string;
 
@@ -63,7 +65,11 @@ describe('Vote Endpoints Integration Tests', () => {
           password: 'Password123!'
         });
 
-      accessToken = signupResponse.body.accessToken;
+      const cookies = signupResponse.headers['set-cookie'];
+      const accessTokenCookie = cookies.find((c: string) => c.startsWith('access_token='));
+      if (!accessTokenCookie) throw new Error('Access token cookie not found');
+      
+      sessionCookie = accessTokenCookie;
       userId = signupResponse.body.user._id;
 
       // Create a test post
@@ -82,7 +88,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should upvote a post successfully', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -102,7 +108,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should downvote a post successfully', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
@@ -123,14 +129,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First upvote
       await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
       // Second upvote (should toggle off - remove vote)
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -146,14 +152,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First upvote
       await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
       // Change to downvote
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
@@ -169,14 +175,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First downvote
       await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
       // Change to upvote
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -201,7 +207,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote with invalid token', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', 'Bearer invalid-token')
+        .set('Cookie', ['access_token=invalid-token'])
         .send({ direction: 1 })
         .expect(401);
 
@@ -211,7 +217,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote with invalid direction', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 2 })
         .expect(400);
 
@@ -222,7 +228,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote without direction', async () => {
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({})
         .expect(400);
 
@@ -234,7 +240,7 @@ describe('Vote Endpoints Integration Tests', () => {
       
       const response = await request(app)
         .post(`/api/posts/${fakePostId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(404);
 
@@ -244,7 +250,7 @@ describe('Vote Endpoints Integration Tests', () => {
   });
 
   describe('POST /api/comments/:id/vote', () => {
-    let accessToken: string;
+    let sessionCookie: string;
     let userId: string;
     let postId: string;
     let commentId: string;
@@ -259,7 +265,11 @@ describe('Vote Endpoints Integration Tests', () => {
           password: 'Password123!'
         });
 
-      accessToken = signupResponse.body.accessToken;
+      const cookies = signupResponse.headers['set-cookie'];
+      const accessTokenCookie = cookies.find((c: string) => c.startsWith('access_token='));
+      if (!accessTokenCookie) throw new Error('Access token cookie not found');
+      
+      sessionCookie = accessTokenCookie;
       userId = signupResponse.body.user._id;
 
       // Create a test post
@@ -289,7 +299,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should upvote a comment successfully', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -309,7 +319,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should downvote a comment successfully', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
@@ -330,14 +340,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First upvote
       await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
       // Second upvote (should toggle off - remove vote)
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -353,14 +363,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First upvote
       await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
       // Change to downvote
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
@@ -376,14 +386,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // First downvote
       await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: -1 })
         .expect(200);
 
       // Change to upvote
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -408,7 +418,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote with invalid token', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', 'Bearer invalid-token')
+        .set('Cookie', ['access_token=invalid-token'])
         .send({ direction: 1 })
         .expect(401);
 
@@ -418,7 +428,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote with invalid direction', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 0 })
         .expect(400);
 
@@ -429,7 +439,7 @@ describe('Vote Endpoints Integration Tests', () => {
     it('should reject vote without direction', async () => {
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({})
         .expect(400);
 
@@ -441,7 +451,7 @@ describe('Vote Endpoints Integration Tests', () => {
       
       const response = await request(app)
         .post(`/api/comments/${fakeCommentId}/vote`)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({ direction: 1 })
         .expect(404);
 
@@ -451,9 +461,9 @@ describe('Vote Endpoints Integration Tests', () => {
   });
 
   describe('Multiple Users Voting', () => {
-    let user1Token: string;
+    let user1TokenCookie: string;
     let user1Id: string;
-    let user2Token: string;
+    let user2TokenCookie: string;
     let user2Id: string;
     let postId: string;
 
@@ -467,7 +477,8 @@ describe('Vote Endpoints Integration Tests', () => {
           password: 'Password123!'
         });
 
-      user1Token = user1Response.body.accessToken;
+      const cookies1 = user1Response.headers['set-cookie'];
+      user1TokenCookie = cookies1.find((c: string) => c.startsWith('access_token='));
       user1Id = user1Response.body.user._id;
 
       // Create second user
@@ -479,7 +490,8 @@ describe('Vote Endpoints Integration Tests', () => {
           password: 'Password123!'
         });
 
-      user2Token = user2Response.body.accessToken;
+      const cookies2 = user2Response.headers['set-cookie'];
+      user2TokenCookie = cookies2.find((c: string) => c.startsWith('access_token='));
       user2Id = user2Response.body.user._id;
 
       // Create a test post
@@ -499,7 +511,7 @@ describe('Vote Endpoints Integration Tests', () => {
       // User 1 upvotes
       const vote1Response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${user1Token}`)
+        .set('Cookie', [user1TokenCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -508,7 +520,7 @@ describe('Vote Endpoints Integration Tests', () => {
       // User 2 upvotes
       const vote2Response = await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${user2Token}`)
+        .set('Cookie', [user2TokenCookie])
         .send({ direction: 1 })
         .expect(200);
 
@@ -527,14 +539,14 @@ describe('Vote Endpoints Integration Tests', () => {
       // User 1 upvotes
       await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${user1Token}`)
+        .set('Cookie', [user1TokenCookie])
         .send({ direction: 1 })
         .expect(200);
 
       // User 2 downvotes
       await request(app)
         .post(`/api/posts/${postId}/vote`)
-        .set('Authorization', `Bearer ${user2Token}`)
+        .set('Cookie', [user2TokenCookie])
         .send({ direction: -1 })
         .expect(200);
 

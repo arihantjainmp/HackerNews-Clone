@@ -3,6 +3,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import express, { Application } from 'express';
+import cookieParser from 'cookie-parser';
 import authRoutes from '../auth';
 import postRoutes from '../post';
 import { User } from '../../models/User';
@@ -27,6 +28,7 @@ beforeAll(async () => {
   // Set up Express app with routes
   app = express();
   app.use(express.json());
+  app.use(cookieParser());
   app.use('/api/auth', authRoutes);
   app.use('/api/posts', postRoutes);
   app.use(errorHandler);
@@ -330,7 +332,7 @@ describe('Post Endpoints Integration Tests', () => {
   });
 
   describe('POST /api/posts', () => {
-    let accessToken: string;
+    let sessionCookie: string;
     let userId: string;
 
     beforeEach(async () => {
@@ -343,14 +345,18 @@ describe('Post Endpoints Integration Tests', () => {
           password: 'Password123!'
         });
 
-      accessToken = signupResponse.body.accessToken;
+      const cookies = signupResponse.headers['set-cookie'];
+      const accessTokenCookie = cookies.find((c: string) => c.startsWith('access_token='));
+      if (!accessTokenCookie) throw new Error('Access token cookie not found');
+      
+      sessionCookie = accessTokenCookie;
       userId = signupResponse.body.user._id;
     });
 
     it('should create a link post successfully', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Link Post',
           url: 'https://example.com'
@@ -375,7 +381,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should create a text post successfully', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Text Post',
           text: 'This is the content of my text post'
@@ -404,7 +410,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject post with both url and text', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post',
           url: 'https://example.com',
@@ -418,7 +424,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject post with neither url nor text', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post'
         })
@@ -430,7 +436,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject post with empty title', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: '',
           url: 'https://example.com'
@@ -445,7 +451,7 @@ describe('Post Endpoints Integration Tests', () => {
       
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: longTitle,
           url: 'https://example.com'
@@ -458,7 +464,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject post with invalid URL format', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post',
           url: 'not-a-valid-url'
@@ -471,7 +477,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should trim whitespace from title', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: '  Test Post  ',
           url: 'https://example.com'
@@ -484,7 +490,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should sanitize HTML from post title to prevent XSS', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: '<script>alert("XSS")</script>Test Post',
           url: 'https://example.com'
@@ -500,7 +506,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should sanitize HTML from post text content to prevent XSS', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post',
           text: '<img src=x onerror="alert(1)">Safe content'
@@ -516,7 +522,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject dangerous URLs with javascript: protocol', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post',
           url: 'javascript:alert(1)'
@@ -531,7 +537,7 @@ describe('Post Endpoints Integration Tests', () => {
     it('should reject dangerous URLs with data: protocol', async () => {
       const response = await request(app)
         .post('/api/posts')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', [sessionCookie])
         .send({
           title: 'Test Post',
           url: 'data:text/html,<script>alert(1)</script>'

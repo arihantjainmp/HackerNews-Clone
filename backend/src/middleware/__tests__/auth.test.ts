@@ -50,7 +50,7 @@ describe('Authentication Middleware', () => {
 
     expect(statusMock).toHaveBeenCalledWith(401);
     expect(jsonMock).toHaveBeenCalledWith({ 
-      error: 'Invalid authorization header format. Expected: Bearer <token>' 
+      error: 'Access token required' 
     });
     expect(mockNext).not.toHaveBeenCalled();
   });
@@ -66,7 +66,7 @@ describe('Authentication Middleware', () => {
 
     expect(statusMock).toHaveBeenCalledWith(401);
     expect(jsonMock).toHaveBeenCalledWith({ 
-      error: 'Invalid authorization header format. Expected: Bearer <token>' 
+      error: 'Access token required' 
     });
     expect(mockNext).not.toHaveBeenCalled();
   });
