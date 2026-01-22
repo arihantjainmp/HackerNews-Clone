@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { sanitizeText } from '../utils/sanitize';
 import { ValidationError, NotFoundError, ForbiddenError } from '../utils/errors';
 import { cache } from '../utils/cache';
+import logger from '../utils/logger';
 
 /**
  * Comment Service
@@ -160,7 +161,7 @@ export async function createComment(data: {
     await createPostCommentNotification(postId, comment._id.toString(), authorId);
   } catch (error) {
     // Log error but don't fail the comment creation
-    console.error('Failed to create notification:', error);
+    logger.warn('Failed to create notification', { error: error instanceof Error ? error.message : error, postId, commentId: comment._id.toString() });
   }
 
   return comment;
@@ -239,7 +240,7 @@ export async function createReply(data: {
     await createCommentReplyNotification(parentId, reply._id.toString(), postId, authorId);
   } catch (error) {
     // Log error but don't fail the reply creation
-    console.error('Failed to create notification:', error);
+    logger.warn('Failed to create notification', { error: error instanceof Error ? error.message : error, parentId, replyId: reply._id.toString(), postId });
   }
 
   return reply;

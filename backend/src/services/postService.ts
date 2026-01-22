@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { sanitizeText, sanitizeUrl } from '../utils/sanitize';
 import { ValidationError, NotFoundError } from '../utils/errors';
 import { cache } from '../utils/cache';
+import logger from '../utils/logger';
 
 /**
  * Post Service
@@ -264,7 +265,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
       });
     } catch (error) {
       // If vote service fails, continue without votes
-      console.error('Failed to fetch user votes:', error);
+      logger.warn('Failed to fetch user votes', { error: error instanceof Error ? error.message : error });
     }
   }
 
@@ -342,7 +343,7 @@ export async function getPostById(postId: string, userId?: string): Promise<IPos
       userVote = await getUserVote(userId, postId);
     } catch (error) {
       // If vote fetch fails, continue without userVote
-      console.error('Failed to fetch user vote:', error);
+      logger.warn('Failed to fetch user vote', { error: error instanceof Error ? error.message : error, postId, userId });
     }
   }
 

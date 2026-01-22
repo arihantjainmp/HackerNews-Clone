@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
+import logger from '../utils/logger';
 
 /**
  * Centralized error handling middleware
@@ -10,8 +11,7 @@ import { AppError } from '../utils/errors';
 export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
   // Log error with full context
   // Requirement 13.1: Log all errors with timestamp, method, path, message, and stack trace
-  console.error({
-    timestamp: new Date().toISOString(),
+  logger.error('Request error', {
     method: req.method,
     path: req.path,
     message: err.message,

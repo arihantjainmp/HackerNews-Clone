@@ -10,6 +10,7 @@ import {
   ConflictError,
   AppError,
 } from '../../utils/errors';
+import logger from '../../utils/logger';
 
 /**
  * Property 37: Error Logging Completeness
@@ -21,7 +22,7 @@ import {
  * **Validates: Requirements 13.1**
  */
 describe('Property 37: Error Logging Completeness', () => {
-  let consoleErrorSpy: any;
+  let loggerErrorSpy: any;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
 
@@ -31,11 +32,11 @@ describe('Property 37: Error Logging Completeness', () => {
       json: vi.fn().mockReturnThis(),
     };
     mockNext = vi.fn();
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    loggerErrorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger as any);
   });
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   });
 
   it('should log all required fields for any error', () => {
@@ -49,7 +50,7 @@ describe('Property 37: Error Logging Completeness', () => {
         fc.string({ minLength: 1, maxLength: 200 }),
         (method, path, errorMessage) => {
           // Reset spy for each iteration
-          consoleErrorSpy.mockClear();
+          loggerErrorSpy.mockClear();
 
           const mockReq: Partial<Request> = {
             method,
@@ -60,15 +61,15 @@ describe('Property 37: Error Logging Completeness', () => {
 
           errorHandler(error, mockReq as Request, mockRes as Response, mockNext);
 
-          // Property: console.error must be called
-          expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+          // Property: logger.error must be called
+          expect(loggerErrorSpy).toHaveBeenCalledTimes(1);
 
           // Property: Log must contain all required fields
-          const loggedData = consoleErrorSpy.mock.calls[0][0];
+          const logMessage = loggerErrorSpy.mock.calls[0][0];
+          const loggedData = loggerErrorSpy.mock.calls[0][1];
           
-          expect(loggedData).toHaveProperty('timestamp');
-          expect(typeof loggedData.timestamp).toBe('string');
-          expect(loggedData.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/); // ISO format
+          expect(logMessage).toBe('Request error');
+          // Winston adds timestamp automatically during formatting, not in metadata
           
           expect(loggedData).toHaveProperty('method');
           expect(loggedData.method).toBe(method);
@@ -101,7 +102,7 @@ describe('Property 37: Error Logging Completeness', () => {
         fc.constantFrom(400, 401, 403, 404, 409, 500),
         (method, path, errorMessage, statusCode) => {
           // Reset spy for each iteration
-          consoleErrorSpy.mockClear();
+          loggerErrorSpy.mockClear();
 
           const mockReq: Partial<Request> = {
             method,
@@ -113,7 +114,7 @@ describe('Property 37: Error Logging Completeness', () => {
           errorHandler(error, mockReq as Request, mockRes as Response, mockNext);
 
           // Property: Log must contain statusCode for AppError
-          const loggedData = consoleErrorSpy.mock.calls[0][0];
+          const loggedData = loggerErrorSpy.mock.calls[0][1];
           
           expect(loggedData).toHaveProperty('statusCode');
           expect(loggedData.statusCode).toBe(statusCode);
@@ -129,7 +130,7 @@ describe('Property 37: Error Logging Completeness', () => {
         fc.string({ minLength: 1, maxLength: 200 }),
         (errorMessage) => {
           // Reset spy for each iteration
-          consoleErrorSpy.mockClear();
+          loggerErrorSpy.mockClear();
 
           const mockReq: Partial<Request> = {
             method: 'GET',
@@ -142,16 +143,13 @@ describe('Property 37: Error Logging Completeness', () => {
           errorHandler(error, mockReq as Request, mockRes as Response, mockNext);
 
           const afterTime = new Date();
-          const loggedData = consoleErrorSpy.mock.calls[0][0];
-          const loggedTime = new Date(loggedData.timestamp);
-
-          // Property: Timestamp must be valid ISO date
-          expect(loggedTime).toBeInstanceOf(Date);
-          expect(loggedTime.getTime()).not.toBeNaN();
+          const loggedData = loggerErrorSpy.mock.calls[0][1];
           
-          // Property: Timestamp must be between before and after times
-          expect(loggedTime.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime() - 1000);
-          expect(loggedTime.getTime()).toBeLessThanOrEqual(afterTime.getTime() + 1000);
+          // Winston adds timestamp automatically, so we just verify the log was called
+          expect(loggerErrorSpy).toHaveBeenCalledTimes(1);
+          expect(loggedData).toHaveProperty('method');
+          expect(loggedData).toHaveProperty('path');
+          expect(loggedData).toHaveProperty('message');
         }
       ),
       { numRuns: 5 }

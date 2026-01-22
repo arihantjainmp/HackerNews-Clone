@@ -4,7 +4,8 @@ import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import mongoSanitize from 'express-mongo-sanitize';
 import { validateEnv } from './utils/validateEnv';
-import { errorHandler, rateLimiter, corsMiddleware } from './middleware';
+import { errorHandler, rateLimiter, corsMiddleware, requestLogger } from './middleware';
+import logger from './utils/logger';
 import authRoutes from './routes/auth';
 import voteRoutes from './routes/vote';
 import postRoutes from './routes/post';
@@ -25,6 +26,9 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
+
+// Request logging middleware
+app.use(requestLogger);
 
 // CORS middleware
 // Requirement 15.1: Configure CORS to allow requests from frontend origin
@@ -61,13 +65,13 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hacker
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB', { uri: MONGODB_URI.replace(/\/\/.*@/, '//***@') });
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      logger.info('Server started', { port: PORT, environment: process.env.NODE_ENV || 'development' });
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    logger.error('MongoDB connection error', { error: error.message, stack: error.stack });
     process.exit(1);
   });
 

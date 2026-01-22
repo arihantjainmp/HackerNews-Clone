@@ -18,3 +18,4 @@ export {
 export { errorHandler, asyncHandler } from './errorHandler';
 export { rateLimiter } from './rateLimit';
 export { corsMiddleware } from './cors';
+export { requestLogger } from './requestLogger';

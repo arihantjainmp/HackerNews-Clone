@@ -8,12 +8,13 @@ import {
   NotFoundError,
   ConflictError,
 } from '../../utils/errors';
+import logger from '../../utils/logger';
 
 describe('Error Handling Middleware', () => {
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
-  let consoleErrorSpy: any;
+  let loggerErrorSpy: any;
 
   beforeEach(() => {
     mockReq = {
@@ -28,12 +29,12 @@ describe('Error Handling Middleware', () => {
 
     mockNext = vi.fn();
 
-    // Spy on console.error to verify logging
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Spy on logger.error to verify logging
+    loggerErrorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger as any);
   });
 
   afterEach(() => {
-    consoleErrorSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   });
 
   describe('errorHandler', () => {
@@ -42,9 +43,9 @@ describe('Error Handling Middleware', () => {
       
       errorHandler(error, mockReq as Request, mockRes as Response, mockNext);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
+        'Request error',
         expect.objectContaining({
-          timestamp: expect.any(String),
           method: 'GET',
           path: '/api/test',
           message: 'Test error',
