@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    # Backend Setup & Test
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: npm ci
+
+    - name: Build Backend
+      working-directory: ./backend
+      run: npm run build
+
+    - name: Test Backend
+      working-directory: ./backend
+      run: npm test
+      env:
+        MONGODB_URI: mongodb://localhost:27017/test_db
+        JWT_SECRET: test_secret_key_123
+        REFRESH_TOKEN_SECRET: test_refresh_secret_456
+
+    # Frontend Setup & Test
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: npm run build
+
+    - name: Test Frontend
+      working-directory: ./frontend
+      run: npm test
