@@ -7,10 +7,19 @@ import { User } from '../models/User';
 
 const router = Router();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+/**
+ * Cookie options for authentication tokens
+ *
+ * NOTE: For production-grade deployments on a single domain, 'sameSite: strict' is preferred.
+ * However, since this demo is deployed across different services (Vercel and Render),
+ * we use 'sameSite: none' and 'secure: true' to allow cross-site cookie transmission.
+ */
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  secure: isProduction,
+  sameSite: isProduction ? ('none' as const) : ('lax' as const),
 };
 
 /**
