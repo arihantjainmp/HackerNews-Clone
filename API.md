@@ -1,92 +1,244 @@
-# API Documentation - Hacker News Clone
+# API Documentation
 
-## Overview
-**Base URL**: `http://localhost:5000/api`
+Base URL: `http://localhost:5000/api`
 
-### Authentication
-This API uses **HttpOnly Cookies** for session management.
-- `access_token`: Short-lived (15 min)
-- `refresh_token`: Long-lived (7 days)
+## POST /auth/signup
+Request body:
+- username: string (required, 3-20 chars)
+- email: string (required, valid email)
+- password: string (required, min 8 chars)
 
-Cookies are automatically managed by the browser or tools like Postman. No manual header management is required for authenticated requests.
-
----
-
-## 📌 Post Endpoints
-
-### `GET /posts`
-Fetch a paginated list of posts.
-
-**Request Params:**
-- `page`: integer (optional, default: 1)
-- `sort`: string (optional, options: `'new'`, `'top'`, `'best'`)
-- `q`: string (optional, search query)
-
-**Response:**
-```json
+Response:
 {
-  "posts": [{
-    "_id": "507f1f77bcf86cd799439011",
-    "title": "Hacker News Clone",
-    "url": "https://github.com/example/repo",
-    "text": null,
-    "author": { "username": "johndoe" },
-    "points": 156,
-    "comment_count": 42,
-    "created_at": "2024-01-01T12:00:00Z",
-    "userVote": 1
-  }],
-  "page": 1,
-  "totalPages": 10,
-  "total": 250
+  user: {
+    _id: string,
+    username: string,
+    email: string,
+    created_at: string
+  }
 }
-```
 
-### `POST /posts`
-Create a new post. (Auth Required)
-- **Body**: `{ "title": "...", "url": "...", "text": "..." }` (One of url/text required)
+## POST /auth/login
+Request body:
+- email: string (required)
+- password: string (required)
 
-### `GET /posts/:id`
-Get post details and full comment thread.
+Response:
+{
+  user: {
+    _id: string,
+    username: string,
+    email: string,
+    created_at: string
+  }
+}
 
----
+## POST /auth/logout
+Request body:
+- (none)
 
-## 📌 Authentication Endpoints
+Response:
+{
+  message: string
+}
 
-### `POST /auth/signup`
-- **Body**: `{ "username": "...", "email": "...", "password": "..." }`
-- **Response**: `201 Created` (Sets Cookies)
+## GET /auth/me
+Request params:
+- (none)
 
-### `POST /auth/login`
-- **Body**: `{ "email": "...", "password": "..." }`
-- **Response**: `200 OK` (Sets Cookies)
+Response:
+{
+  user: {
+    _id: string,
+    username: string,
+    email: string,
+    created_at: string
+  }
+}
 
-### `POST /auth/logout`
-- **Response**: `200 OK` (Clears Cookies)
+## GET /posts
+Request params:
+- page: integer (optional, default: 1)
+- limit: integer (optional, default: 25)
+- sort: string (optional, options: 'new', 'top', 'best')
+- q: string (optional, search query)
 
-### `GET /auth/me`
-- **Response**: `{ "user": { "_id": "...", "username": "..." } }`
+Response:
+{
+  posts: [{
+    _id: string,
+    title: string,
+    url: string | null,
+    text: string | null,
+    type: string ('link' | 'text'),
+    author: {
+      _id: string,
+      username: string,
+      created_at: string
+    },
+    points: integer,
+    comment_count: integer,
+    created_at: string,
+    userVote: integer | null
+  }],
+  total: integer,
+  page: integer,
+  totalPages: integer
+}
 
----
+## POST /posts
+Request body:
+- title: string (required)
+- url: string (optional)
+- text: string (optional)
 
-## 📌 Comment & Vote Endpoints
+Response:
+{
+  post: {
+    _id: string,
+    title: string,
+    url: string | null,
+    text: string | null,
+    type: string,
+    author: {
+      _id: string,
+      username: string
+    },
+    points: integer,
+    comment_count: integer,
+    created_at: string
+  }
+}
 
-### `POST /posts/:postId/comments`
-Submit a top-level comment. (Auth Required)
+## GET /posts/:id
+Request params:
+- id: string (required)
 
-### `POST /comments/:commentId/replies`
-Reply to a specific comment. (Auth Required)
+Response:
+{
+  post: {
+    _id: string,
+    title: string,
+    url: string | null,
+    text: string | null,
+    author: {
+      _id: string,
+      username: string
+    },
+    points: integer,
+    comment_count: integer,
+    created_at: string,
+    userVote: integer | null
+  },
+  comments: [{
+    comment: {
+      _id: string,
+      content: string,
+      author: {
+        _id: string,
+        username: string
+      },
+      points: integer,
+      created_at: string
+    },
+    replies: array // Recursive structure of comments
+  }]
+}
 
-### `POST /posts/:id/vote` | `POST /comments/:id/vote`
-- **Body**: `{ "direction": 1 }` (1 for up, -1 for down)
-- **Toggle**: Sending the same direction again removes the vote.
+## POST /posts/:id/vote
+Request body:
+- direction: integer (1 for upvote, -1 for downvote)
 
----
+Response:
+{
+  points: integer,
+  userVote: integer
+}
 
-## 📌 Other Endpoints
+## POST /posts/:postId/comments
+Request body:
+- content: string (required)
 
-### `GET /notifications`
-Fetch unread notifications for the user. (Auth Required)
+Response:
+{
+  comment: {
+    _id: string,
+    content: string,
+    post_id: string,
+    author: {
+      _id: string,
+      username: string
+    },
+    points: integer,
+    created_at: string
+  }
+}
 
-### `GET /users/:username`
-Fetch public profile and recent activity.
+## POST /comments/:commentId/replies
+Request body:
+- content: string (required)
+
+Response:
+{
+  comment: {
+    _id: string,
+    content: string,
+    post_id: string,
+    parent_id: string,
+    author: {
+      _id: string,
+      username: string
+    },
+    points: integer,
+    created_at: string
+  }
+}
+
+## POST /comments/:id/vote
+Request body:
+- direction: integer (1 for upvote, -1 for downvote)
+
+Response:
+{
+  points: integer,
+  userVote: integer
+}
+
+## DELETE /comments/:id
+Request params:
+- id: string (required)
+
+Response:
+{
+  message: string
+}
+
+## GET /users/:username
+Request params:
+- username: string (required)
+
+Response:
+{
+  user: {
+    _id: string,
+    username: string,
+    created_at: string
+  },
+  posts: array,
+  comments: array
+}
+
+## GET /notifications
+Request params:
+- unreadOnly: boolean (optional)
+
+Response:
+{
+  notifications: [{
+    _id: string,
+    type: string ('comment_reply' | 'post_comment'),
+    message: string,
+    is_read: boolean,
+    created_at: string
+  }]
+}
