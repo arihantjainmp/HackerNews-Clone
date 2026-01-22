@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [navigate]);
 
   // Compute isAuthenticated based on user state
-  const isAuthenticated = user !== null && user._id !== '';
+  const isAuthenticated = user !== null && user?._id !== '';
 
   const value: AuthContextState = {
     user,

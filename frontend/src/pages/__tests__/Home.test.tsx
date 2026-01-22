@@ -195,11 +195,11 @@ describe('Home Page - Search Debouncing', () => {
       fireEvent.change(searchInput, { target: { value: 'test query' } });
 
       // Indicator should not appear immediately
-      expect(screen.queryByText(/searching for:/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/searching:/i)).not.toBeInTheDocument();
 
       // Wait for debounce - indicator should appear
       await waitFor(() => {
-        expect(screen.getByText(/searching for:/i)).toBeInTheDocument();
+        expect(screen.getByText(/searching:/i)).toBeInTheDocument();
         expect(screen.getByText('test query')).toBeInTheDocument();
       }, { timeout: 500 });
     });

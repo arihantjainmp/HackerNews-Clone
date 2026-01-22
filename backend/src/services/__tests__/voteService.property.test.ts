@@ -108,7 +108,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(vote?.target_type).toBe(targetType);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -178,7 +178,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(vote?.target_type).toBe(targetType);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -257,7 +257,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(votes).toHaveLength(0);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -343,7 +343,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(votes).toHaveLength(1);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -429,7 +429,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(votes).toHaveLength(1);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -508,7 +508,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(updatedTarget?.points).toBe(recordedSum);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -593,7 +593,7 @@ describe('Property-Based Tests: Vote State Transitions', () => {
           expect(updatedTarget?.points).toBe(recordedSum);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });

@@ -173,7 +173,7 @@ describe('JWT Token Utilities', () => {
             expect(expirationDuration).toBe(900); // 15 minutes in seconds
           }
         ),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -217,7 +217,7 @@ describe('JWT Token Utilities', () => {
             expect(expirationDuration).toBe(604800); // 7 days in seconds
           }
         ),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
   });

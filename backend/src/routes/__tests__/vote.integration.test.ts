@@ -127,19 +127,19 @@ describe('Vote Endpoints Integration Tests', () => {
         .send({ direction: 1 })
         .expect(200);
 
-      // Second upvote (should be idempotent)
+      // Second upvote (should toggle off - remove vote)
       const response = await request(app)
         .post(`/api/posts/${postId}/vote`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ direction: 1 })
         .expect(200);
 
-      expect(response.body).toHaveProperty('points', 1);
-      expect(response.body).toHaveProperty('userVote', 1);
+      expect(response.body).toHaveProperty('points', 0);
+      expect(response.body).toHaveProperty('userVote', 0);
 
-      // Verify post points remain at 1
+      // Verify post points are back to 0 (vote removed)
       const post = await Post.findById(postId);
-      expect(post?.points).toBe(1);
+      expect(post?.points).toBe(0);
     });
 
     it('should change vote from upvote to downvote', async () => {
@@ -334,19 +334,19 @@ describe('Vote Endpoints Integration Tests', () => {
         .send({ direction: 1 })
         .expect(200);
 
-      // Second upvote (should be idempotent)
+      // Second upvote (should toggle off - remove vote)
       const response = await request(app)
         .post(`/api/comments/${commentId}/vote`)
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ direction: 1 })
         .expect(200);
 
-      expect(response.body).toHaveProperty('points', 1);
-      expect(response.body).toHaveProperty('userVote', 1);
+      expect(response.body).toHaveProperty('points', 0);
+      expect(response.body).toHaveProperty('userVote', 0);
 
-      // Verify comment points remain at 1
+      // Verify comment points are back to 0 (vote removed)
       const comment = await Comment.findById(commentId);
-      expect(comment?.points).toBe(1);
+      expect(comment?.points).toBe(0);
     });
 
     it('should change vote from upvote to downvote', async () => {

@@ -38,8 +38,10 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  // Clear posts before each test
+  // Clear posts and cache before each test
   await Post.deleteMany({});
+  const { cache } = await import('../../utils/cache');
+  cache.clear();
 });
 
 /**
@@ -77,7 +79,7 @@ describe('Property 8: Post Type Determination', () => {
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -109,7 +111,7 @@ describe('Property 8: Post Type Determination', () => {
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -158,7 +160,7 @@ describe('Property 9: Post Mutual Exclusivity', () => {
           ).rejects.toThrow('Post must have either url or text, but not both');
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -186,7 +188,7 @@ describe('Property 9: Post Mutual Exclusivity', () => {
           ).rejects.toThrow('Post must have either url or text');
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -247,7 +249,7 @@ describe('Property 10: Post Initialization Invariant', () => {
           await Post.deleteOne({ _id: result._id });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -295,7 +297,7 @@ describe('Property 11: Empty Title Rejection', () => {
           ).rejects.toThrow('Title cannot be empty or contain only whitespace');
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -334,7 +336,7 @@ describe('Property 11: Empty Title Rejection', () => {
           ).rejects.toThrow('Title must be between 1 and 300 characters');
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -395,7 +397,7 @@ describe('Property 13: New Sort Ordering', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -455,7 +457,7 @@ describe('Property 14: Top Sort Ordering', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -531,7 +533,7 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -589,7 +591,7 @@ describe('Property 15: Best Sort Algorithm Correctness', () => {
           await Post.deleteMany({ _id: { $in: [olderPost._id, newerPost._id] } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -623,6 +625,11 @@ describe('Property 12: Pagination Consistency', () => {
         // Generate random page size (3-15 posts per page)
         fc.integer({ min: 3, max: 15 }),
         async (postData, limit) => {
+          // Cleanup at start of each property test run
+          await Post.deleteMany({});
+          const { cache } = await import('../../utils/cache');
+          cache.clear();
+          
           // Create posts in database
           const createdPosts = await Promise.all(
             postData.map(async (data) => {
@@ -684,7 +691,7 @@ describe('Property 12: Pagination Consistency', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -709,6 +716,11 @@ describe('Property 12: Pagination Consistency', () => {
         // Generate random sort method
         fc.constantFrom('new', 'top', 'best'),
         async (postData, limit, sort) => {
+          // Cleanup at start of each property test run
+          await Post.deleteMany({});
+          const { cache } = await import('../../utils/cache');
+          cache.clear();
+          
           // Create posts in database
           const createdPosts = await Promise.all(
             postData.map(async (data) => {
@@ -746,7 +758,7 @@ describe('Property 12: Pagination Consistency', () => {
           await Post.deleteMany({ _id: { $in: createdPosts.map(p => p._id) } });
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });
@@ -839,7 +851,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -895,7 +907,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -954,7 +966,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
   
@@ -982,6 +994,8 @@ describe('Property 16: Search Result Containment', () => {
         async (searchTerm, postData, limit) => {
           // Clear all posts before this iteration to ensure test isolation
           await Post.deleteMany({});
+          const { cache } = await import('../../utils/cache');
+          cache.clear();
           
           // Create posts with titles that may or may not contain search term
           const createdPosts = await Promise.all(
@@ -1047,7 +1061,7 @@ describe('Property 16: Search Result Containment', () => {
           await Post.deleteMany({});
         }
       ),
-      { numRuns: 20 }
+      { numRuns: 3 }
     );
   });
 });

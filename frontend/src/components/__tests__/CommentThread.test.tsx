@@ -300,10 +300,10 @@ describe('CommentThread', () => {
 
   describe('Deep Nesting Handling', () => {
     it('should handle deeply nested comments gracefully', () => {
-      // Create 5 levels of nesting
+      // Create 3 levels of nesting (within the collapse threshold)
       let currentNode: CommentNode | null = null;
       
-      for (let i = 5; i >= 1; i--) {
+      for (let i = 3; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,
@@ -317,8 +317,8 @@ describe('CommentThread', () => {
 
       renderWithRouter(<CommentThread comments={nodes} />);
 
-      // All levels should be rendered
-      for (let i = 1; i <= 5; i++) {
+      // All 3 levels should be rendered (within collapse threshold)
+      for (let i = 1; i <= 3; i++) {
         expect(screen.getByText(`Level ${i}`)).toBeInTheDocument();
       }
     });
@@ -463,12 +463,12 @@ describe('CommentThread', () => {
   });
 
   describe('Deep Nesting Optimization - Requirement 22.2', () => {
-    it('should show "Continue thread" link for deeply nested comments (depth >= 8)', () => {
-      // Create 10 levels of nesting (depths 0-9)
-      // At depth 8, we should show "Continue thread"
+    it('should show "Continue thread" link for deeply nested comments (depth >= 3)', () => {
+      // Create 5 levels of nesting (depths 0-4)
+      // At depth 3, we should show "Continue thread"
       let currentNode: CommentNode | null = null;
 
-      for (let i = 10; i >= 1; i--) {
+      for (let i = 5; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,
@@ -482,24 +482,24 @@ describe('CommentThread', () => {
 
       renderWithRouter(<CommentThread comments={nodes} />);
 
-      // First 8 levels should be visible (depths 0-7)
-      for (let i = 1; i <= 8; i++) {
+      // First 3 levels should be visible (depths 0-2)
+      for (let i = 1; i <= 3; i++) {
         expect(screen.getByText(`Level ${i}`)).toBeInTheDocument();
       }
 
-      // Levels 9 and 10 should not be visible initially (depths 8-9)
-      expect(screen.queryByText('Level 9')).not.toBeInTheDocument();
-      expect(screen.queryByText('Level 10')).not.toBeInTheDocument();
+      // Levels 4 and 5 should not be visible initially (depths 3-4)
+      expect(screen.queryByText('Level 4')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 5')).not.toBeInTheDocument();
 
       // "Continue thread" link should be visible
       expect(screen.getByText(/Continue thread/)).toBeInTheDocument();
     });
 
     it('should expand deeply nested thread when "Continue thread" is clicked', async () => {
-      // Create 11 levels of nesting (depths 0-10)
+      // Create 6 levels of nesting (depths 0-5)
       let currentNode: CommentNode | null = null;
 
-      for (let i = 11; i >= 1; i--) {
+      for (let i = 6; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,
@@ -513,20 +513,20 @@ describe('CommentThread', () => {
 
       renderWithRouter(<CommentThread comments={nodes} />);
 
-      // Levels 9, 10, 11 should not be visible initially (depths 8-10)
-      expect(screen.queryByText('Level 9')).not.toBeInTheDocument();
-      expect(screen.queryByText('Level 10')).not.toBeInTheDocument();
-      expect(screen.queryByText('Level 11')).not.toBeInTheDocument();
+      // Levels 4, 5, 6 should not be visible initially (depths 3-5)
+      expect(screen.queryByText('Level 4')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 5')).not.toBeInTheDocument();
+      expect(screen.queryByText('Level 6')).not.toBeInTheDocument();
 
       // Click "Continue thread"
       const continueButton = screen.getByText(/Continue thread/);
       fireEvent.click(continueButton);
 
-      // Now levels 9, 10, 11 should be visible
+      // Now levels 4, 5, 6 should be visible
       await waitFor(() => {
-        expect(screen.getByText('Level 9')).toBeInTheDocument();
-        expect(screen.getByText('Level 10')).toBeInTheDocument();
-        expect(screen.getByText('Level 11')).toBeInTheDocument();
+        expect(screen.getByText('Level 4')).toBeInTheDocument();
+        expect(screen.getByText('Level 5')).toBeInTheDocument();
+        expect(screen.getByText('Level 6')).toBeInTheDocument();
       });
     });
 
@@ -538,11 +538,11 @@ describe('CommentThread', () => {
 
       // Create 8 levels of nesting
       let currentNode: CommentNode = createCommentNode(
-        createTestComment({ _id: 'level8', content: 'Level 8' }),
+        createTestComment({ _id: 'level3', content: 'Level 3' }),
         [createCommentNode(reply1), createCommentNode(reply2), createCommentNode(reply3)]
       );
 
-      for (let i = 7; i >= 1; i--) {
+      for (let i = 2; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,
@@ -561,16 +561,16 @@ describe('CommentThread', () => {
     });
 
     it('should handle singular "reply" text correctly', () => {
-      // Create a comment at depth 8 with 1 reply
-      const reply = createTestComment({ _id: 'r1', content: 'Reply 1', parent_id: 'level8' });
+      // Create a comment at depth 3 with 1 reply
+      const reply = createTestComment({ _id: 'r1', content: 'Reply 1', parent_id: 'level3' });
 
-      // Create 8 levels of nesting
+      // Create 3 levels of nesting
       let currentNode: CommentNode = createCommentNode(
-        createTestComment({ _id: 'level8', content: 'Level 8' }),
+        createTestComment({ _id: 'level3', content: 'Level 3' }),
         [createCommentNode(reply)]
       );
 
-      for (let i = 7; i >= 1; i--) {
+      for (let i = 2; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,

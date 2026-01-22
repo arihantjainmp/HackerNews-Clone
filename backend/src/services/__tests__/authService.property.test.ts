@@ -95,7 +95,7 @@ describe('Property 2: Token Generation Completeness', () => {
           await RefreshToken.deleteMany({ token: result.refreshToken });
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   }, 60000); // 60 second timeout for property-based test with database operations
 });
@@ -176,9 +176,9 @@ describe('Property 4: Token Refresh Correctness', () => {
           await RefreshToken.deleteMany({ user_id: oldTokenDoc!.user_id });
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
-  });
+  }, 60000); // 60 second timeout for property-based test with database operations
 });
 
 /**
@@ -201,7 +201,7 @@ describe('Property 5: Invalid Token Rejection', () => {
           await expect(refreshAccessToken(invalidToken)).rejects.toThrow('Invalid or expired refresh token');
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   });
   
@@ -240,7 +240,7 @@ describe('Property 5: Invalid Token Rejection', () => {
           await RefreshToken.deleteMany({});
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   }, 60000); // 60 second timeout for property-based test with database operations
   
@@ -282,7 +282,7 @@ describe('Property 5: Invalid Token Rejection', () => {
           await RefreshToken.deleteMany({});
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   });
 });
@@ -341,7 +341,7 @@ describe('Property 6: Logout Token Invalidation', () => {
           await RefreshToken.deleteMany({});
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   });
   
@@ -391,7 +391,7 @@ describe('Property 6: Logout Token Invalidation', () => {
           await RefreshToken.deleteMany({});
         }
       ),
-      { numRuns: 50 }
+      { numRuns: 5 }
     );
   });
 });

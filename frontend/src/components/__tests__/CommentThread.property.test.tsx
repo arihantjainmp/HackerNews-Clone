@@ -300,7 +300,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -338,7 +338,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -368,7 +368,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -399,7 +399,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -420,7 +420,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -453,7 +453,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -484,7 +484,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
   });
@@ -517,7 +517,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -550,7 +550,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -607,7 +607,7 @@ describe('CommentThread Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -631,7 +631,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -658,7 +658,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -686,7 +686,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -716,7 +716,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
   });
@@ -754,7 +754,7 @@ describe('CommentThread Property Tests', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
   });

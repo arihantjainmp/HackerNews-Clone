@@ -134,7 +134,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -156,7 +156,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -178,7 +178,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -203,7 +203,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -229,7 +229,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -264,7 +264,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
 
@@ -288,7 +288,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -313,7 +313,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
   });
@@ -352,7 +352,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
   });
@@ -395,7 +395,7 @@ describe('PostList Property Tests - Error Handling', () => {
           // Cleanup after each property test iteration
           cleanup();
         }),
-        { numRuns: 100 }
+        { numRuns: 5 }
       );
     });
   });

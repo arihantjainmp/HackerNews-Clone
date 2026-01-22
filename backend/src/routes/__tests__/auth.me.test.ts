@@ -2,11 +2,12 @@ import request from 'supertest';
 import express from 'express';
 import authRouter from '../auth';
 import { User } from '../../models/User';
-import { generateAccessToken } from '../../utils/jwt';
+import { generateAccessToken, verifyAccessToken } from '../../utils/jwt';
+import { vi } from 'vitest';
 
 // Mock dependencies
-jest.mock('../../models/User');
-jest.mock('../../utils/jwt');
+vi.mock('../../models/User');
+vi.mock('../../utils/jwt');
 
 const app = express();
 app.use(express.json());
@@ -18,23 +19,23 @@ describe('GET /api/auth/me', () => {
     username: 'testuser',
     email: 'test@example.com',
     created_at: new Date('2024-01-01'),
-    toISOString: jest.fn().mockReturnValue('2024-01-01T00:00:00.000Z')
+    toISOString: vi.fn().mockReturnValue('2024-01-01T00:00:00.000Z')
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return current user data when authenticated', async () => {
     // Mock JWT verification
-    (require('../../utils/jwt').verifyAccessToken as jest.Mock).mockReturnValue({
+    vi.mocked(verifyAccessToken).mockReturnValue({
       userId: mockUser._id
     });
 
     // Mock User.findById
-    (User.findById as jest.Mock).mockReturnValue({
-      select: jest.fn().mockResolvedValue(mockUser)
-    });
+    vi.mocked(User.findById).mockReturnValue({
+      select: vi.fn().mockResolvedValue(mockUser)
+    } as any);
 
     const token = 'valid-token';
 
@@ -62,14 +63,14 @@ describe('GET /api/auth/me', () => {
 
   it('should return 404 when user not found', async () => {
     // Mock JWT verification
-    (require('../../utils/jwt').verifyAccessToken as jest.Mock).mockReturnValue({
+    vi.mocked(verifyAccessToken).mockReturnValue({
       userId: 'nonexistent-id'
     });
 
     // Mock User.findById returning null
-    (User.findById as jest.Mock).mockReturnValue({
-      select: jest.fn().mockResolvedValue(null)
-    });
+    vi.mocked(User.findById).mockReturnValue({
+      select: vi.fn().mockResolvedValue(null)
+    } as any);
 
     const token = 'valid-token';
 

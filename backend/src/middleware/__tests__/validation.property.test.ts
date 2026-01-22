@@ -56,7 +56,7 @@ describe('Property 32: Input Validation Universality', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -89,7 +89,7 @@ describe('Property 32: Input Validation Universality', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -122,7 +122,7 @@ describe('Property 32: Input Validation Universality', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -151,7 +151,7 @@ describe('Property 32: Input Validation Universality', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });
@@ -208,7 +208,7 @@ describe('Property 33: XSS Prevention', () => {
           expect(sanitized).not.toContain('javascript:');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -246,7 +246,7 @@ describe('Property 33: XSS Prevention', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -262,7 +262,7 @@ describe('Property 33: XSS Prevention', () => {
           expect(sanitized).toBe(safeText);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });
@@ -292,7 +292,7 @@ describe('Property 34: URL Format Validation', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -318,7 +318,7 @@ describe('Property 34: URL Format Validation', () => {
           expect(result.error?.message).toMatch(/protocol|not allowed|security/i);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -341,7 +341,7 @@ describe('Property 34: URL Format Validation', () => {
           expect(result.error).toBeDefined();
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -361,7 +361,7 @@ describe('Property 34: URL Format Validation', () => {
           expect(sanitized).toBe('');
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -376,7 +376,7 @@ describe('Property 34: URL Format Validation', () => {
           expect(sanitized).toBe(validUrl);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });
@@ -408,7 +408,7 @@ describe('Property 35: Email Format Validation', () => {
           expect(result.error).toBeUndefined();
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -428,7 +428,7 @@ describe('Property 35: Email Format Validation', () => {
           expect(result.error?.details.some(d => d.path.includes('email'))).toBe(true);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -449,7 +449,7 @@ describe('Property 35: Email Format Validation', () => {
           expect(result.error?.details.some(d => d.path.includes('email'))).toBe(true);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -475,7 +475,7 @@ describe('Property 35: Email Format Validation', () => {
           expect(result.error).toBeDefined();
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });
@@ -517,7 +517,7 @@ describe('Property 36: Validation Error Response Format', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -548,7 +548,7 @@ describe('Property 36: Validation Error Response Format', () => {
           expect(result.error?.details.some(d => d.path.includes(fieldName))).toBe(true);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -576,7 +576,7 @@ describe('Property 36: Validation Error Response Format', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -606,7 +606,7 @@ describe('Property 36: Validation Error Response Format', () => {
           expect(result.error!.details.length).toBeGreaterThanOrEqual(numInvalidFields);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });

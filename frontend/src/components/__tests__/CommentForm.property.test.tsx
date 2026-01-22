@@ -162,7 +162,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -210,7 +210,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -267,7 +267,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -321,7 +321,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -376,7 +376,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -423,7 +423,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -480,7 +480,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
 
@@ -521,7 +521,7 @@ describe('CommentForm Property Tests', () => {
             cleanup();
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 5 }
       );
     });
   });

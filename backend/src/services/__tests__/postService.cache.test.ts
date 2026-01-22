@@ -59,7 +59,7 @@ describe('Post Service - Caching', () => {
       expect(result1.posts).toHaveLength(1);
 
       // Check cache was populated
-      const cacheKey = cache.generateKey('posts', { page: 1, limit: 25, sort: 'new', search: '' });
+      const cacheKey = cache.generateKey('posts', { page: 1, limit: 25, sort: 'new', search: '', userId: 'anonymous' });
       const cachedResult = cache.get(cacheKey);
       expect(cachedResult).not.toBeNull();
       expect(cachedResult).toEqual(result1);

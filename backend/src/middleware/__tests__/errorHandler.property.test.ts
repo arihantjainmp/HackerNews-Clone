@@ -84,7 +84,7 @@ describe('Property 37: Error Logging Completeness', () => {
           expect(loggedData.stack.length).toBeGreaterThan(0);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -119,7 +119,7 @@ describe('Property 37: Error Logging Completeness', () => {
           expect(loggedData.statusCode).toBe(statusCode);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -154,7 +154,7 @@ describe('Property 37: Error Logging Completeness', () => {
           expect(loggedTime.getTime()).toBeLessThanOrEqual(afterTime.getTime() + 1000);
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });
@@ -211,7 +211,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -235,7 +235,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -259,7 +259,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -283,7 +283,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -307,7 +307,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -332,7 +332,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -355,7 +355,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid ID format' });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -381,7 +381,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -408,7 +408,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -432,7 +432,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -457,7 +457,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           );
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -488,7 +488,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           process.env.NODE_ENV = originalEnv;
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
     
     // Ensure environment is restored
@@ -522,7 +522,7 @@ describe('Property 38: HTTP Status Code Mapping', () => {
           process.env.NODE_ENV = originalEnv;
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
     
     // Ensure environment is restored

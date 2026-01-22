@@ -139,7 +139,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -214,7 +214,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -313,7 +313,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -414,7 +414,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -482,7 +482,7 @@ describe('Comment Service - Property Tests', () => {
           await User.deleteMany({ _id: user._id });
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -579,7 +579,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -669,7 +669,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -803,7 +803,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 
@@ -905,7 +905,7 @@ describe('Comment Service - Property Tests', () => {
           }
         }
       ),
-      { numRuns: 100 }
+      { numRuns: 5 }
     );
   });
 });

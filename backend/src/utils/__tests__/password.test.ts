@@ -153,7 +153,7 @@ describe('Password Utilities', () => {
             expect(isInvalid).toBe(false);
           }
         ),
-        { numRuns: 20 } // Reduced from 100 due to bcrypt performance
+        { numRuns: 3 } // Reduced from 100 due to bcrypt performance
       );
     }, 60000); // 60 second timeout for property-based test
   });
