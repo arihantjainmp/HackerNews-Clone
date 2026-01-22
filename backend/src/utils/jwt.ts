@@ -25,7 +25,7 @@ export interface TokenResult {
  */
 export function generateAccessToken(userId: string): TokenResult {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
     throw new Error('JWT_SECRET is not configured');
   }
@@ -34,11 +34,11 @@ export function generateAccessToken(userId: string): TokenResult {
   const expiresInMs = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   // Add unique identifier to prevent duplicate tokens
-  const payload: TokenPayload = { 
+  const payload: TokenPayload = {
     userId,
-    jti: randomBytes(16).toString('hex') // JWT ID for uniqueness
+    jti: randomBytes(16).toString('hex'), // JWT ID for uniqueness
   };
-  
+
   const token = jwt.sign(payload, secret, {
     expiresIn,
   });
@@ -56,7 +56,7 @@ export function generateAccessToken(userId: string): TokenResult {
  */
 export function generateRefreshToken(userId: string): TokenResult {
   const secret = process.env.REFRESH_TOKEN_SECRET;
-  
+
   if (!secret) {
     throw new Error('REFRESH_TOKEN_SECRET is not configured');
   }
@@ -65,11 +65,11 @@ export function generateRefreshToken(userId: string): TokenResult {
   const expiresInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
   // Add unique identifier to prevent duplicate tokens
-  const payload: TokenPayload = { 
+  const payload: TokenPayload = {
     userId,
-    jti: randomBytes(16).toString('hex') // JWT ID for uniqueness
+    jti: randomBytes(16).toString('hex'), // JWT ID for uniqueness
   };
-  
+
   const token = jwt.sign(payload, secret, {
     expiresIn,
   });
@@ -87,7 +87,7 @@ export function generateRefreshToken(userId: string): TokenResult {
  */
 export function verifyAccessToken(token: string): TokenPayload {
   const secret = process.env.JWT_SECRET;
-  
+
   if (!secret) {
     throw new Error('JWT_SECRET is not configured');
   }
@@ -114,7 +114,7 @@ export function verifyAccessToken(token: string): TokenPayload {
  */
 export function verifyRefreshToken(token: string): TokenPayload {
   const secret = process.env.REFRESH_TOKEN_SECRET;
-  
+
   if (!secret) {
     throw new Error('REFRESH_TOKEN_SECRET is not configured');
   }

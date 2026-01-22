@@ -2,11 +2,11 @@
  * Axios API client with interceptors for authentication and token refresh
  *
  * This module provides a configured axios instance that:
- * - Automatically adds Authorization headers to requests
- * - Handles automatic token refresh on 401 errors
+ * - Sends cookies with every request (withCredentials: true)
+ * - Handles automatic token refresh on 401 errors via HttpOnly cookies
  * - Redirects to login on refresh token failures
  *
- * Requirements: 11.3, 11.4, 11.7
+ * Requirements: 11.3, 11.4
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
@@ -16,56 +16,6 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 // ============================================================================
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const TOKEN_STORAGE_KEY = 'auth_tokens';
-
-// ============================================================================
-// Token Storage Interface
-// ============================================================================
-
-interface StoredTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-// ============================================================================
-// Token Storage Utilities
-// ============================================================================
-
-/**
- * Get stored tokens from localStorage
- */
-export const getStoredTokens = (): StoredTokens | null => {
-  try {
-    const stored = localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (!stored) return null;
-    return JSON.parse(stored) as StoredTokens;
-  } catch (error) {
-    console.error('Failed to parse stored tokens:', error);
-    return null;
-  }
-};
-
-/**
- * Store tokens in localStorage
- */
-export const setStoredTokens = (tokens: StoredTokens): void => {
-  try {
-    localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
-  } catch (error) {
-    console.error('Failed to store tokens:', error);
-  }
-};
-
-/**
- * Clear stored tokens from localStorage
- */
-export const clearStoredTokens = (): void => {
-  try {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  } catch (error) {
-    console.error('Failed to clear stored tokens:', error);
-  }
-};
 
 // ============================================================================
 // Axios Instance Configuration
@@ -77,36 +27,11 @@ export const clearStoredTokens = (): void => {
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // 30 seconds
+  withCredentials: true, // Send cookies with requests
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-// ============================================================================
-// Request Interceptor
-// ============================================================================
-
-/**
- * Request interceptor to add Authorization header
- * Automatically attaches access token to all requests if available
- *
- * Requirement 11.7: Include Access_Token in Authorization header for authenticated requests
- */
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const tokens = getStoredTokens();
-
-    // Add Authorization header if access token exists
-    if (tokens?.accessToken) {
-      config.headers.Authorization = `Bearer ${tokens.accessToken}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 // ============================================================================
 // Response Interceptor for Token Refresh
@@ -158,14 +83,13 @@ apiClient.interceptors.response.use(
     // Check if error is 401 and we haven't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Check if this is an auth endpoint (login, signup, refresh) - don't try to refresh token
-      if (originalRequest.url?.includes('/auth/login') || 
-          originalRequest.url?.includes('/auth/signup') ||
-          originalRequest.url?.includes('/auth/refresh')) {
-        // These are authentication endpoints - pass through the error
+      if (
+        originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/signup') ||
+        originalRequest.url?.includes('/auth/refresh')
+      ) {
+        // If refresh fails, we are definitely logged out
         if (originalRequest.url?.includes('/auth/refresh')) {
-          // Only clear tokens and redirect for refresh endpoint
-          clearStoredTokens();
-
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
           }
@@ -180,7 +104,7 @@ apiClient.interceptors.response.use(
           failedRequestsQueue.push({ resolve, reject });
         })
           .then(() => {
-            // Retry original request with new token
+            // Retry original request
             return apiClient(originalRequest);
           })
           .catch((err) => {
@@ -192,51 +116,29 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const tokens = getStoredTokens();
-
-      if (!tokens?.refreshToken) {
-        // No refresh token available - redirect to login
-        isRefreshing = false;
-        clearStoredTokens();
-
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-
-        return Promise.reject(error);
-      }
-
       try {
-        // Attempt to refresh the access token
-        const response = await axios.post(
+        // Attempt to refresh the access token via cookie
+        await axios.post(
           `${API_BASE_URL}/api/auth/refresh`,
-          { refreshToken: tokens.refreshToken },
+          {},
           {
+            withCredentials: true, // Send refresh token cookie
             headers: {
               'Content-Type': 'application/json',
             },
           }
         );
 
-        const { accessToken, refreshToken } = response.data;
-
-        // Store new tokens
-        setStoredTokens({ accessToken, refreshToken });
-
-        // Update Authorization header for original request
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
         // Process queued requests
         processQueue();
         isRefreshing = false;
 
-        // Retry original request with new token
+        // Retry original request
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
+        // Refresh failed - redirect to login
         processQueue(refreshError as Error);
         isRefreshing = false;
-        clearStoredTokens();
 
         if (typeof window !== 'undefined') {
           window.location.href = '/login';

@@ -21,7 +21,7 @@ export const getUserProfile = async (
 
     // Find user by username
     const user = await User.findOne({ username }).select('-password_hash');
-    
+
     if (!user) {
       throw new NotFoundError('User not found');
     }
@@ -34,7 +34,7 @@ export const getUserProfile = async (
         .skip(skip)
         .populate('author_id', 'username email created_at')
         .lean(),
-      Post.countDocuments({ author_id: user._id })
+      Post.countDocuments({ author_id: user._id }),
     ]);
 
     // Fetch user's comments with pagination
@@ -46,21 +46,21 @@ export const getUserProfile = async (
         .populate('author_id', 'username email created_at')
         .populate('post_id', 'title')
         .lean(),
-      Comment.countDocuments({ author_id: user._id, is_deleted: false })
+      Comment.countDocuments({ author_id: user._id, is_deleted: false }),
     ]);
 
     // Transform posts to include author field
     const transformedPosts = posts.map((post: any) => ({
       ...post,
       author: post.author_id,
-      author_id: post.author_id._id
+      author_id: post.author_id._id,
     }));
 
     // Transform comments to include author field
     const transformedComments = comments.map((comment: any) => ({
       ...comment,
       author: comment.author_id,
-      author_id: comment.author_id._id
+      author_id: comment.author_id._id,
     }));
 
     res.json({
@@ -68,14 +68,14 @@ export const getUserProfile = async (
         _id: user._id,
         username: user.username,
         email: user.email,
-        created_at: user.created_at
+        created_at: user.created_at,
       },
       posts: transformedPosts,
       comments: transformedComments,
       totalPosts,
       totalComments,
       page,
-      totalPages: Math.ceil(Math.max(totalPosts, totalComments) / limit)
+      totalPages: Math.ceil(Math.max(totalPosts, totalComments) / limit),
     });
   } catch (error) {
     next(error);

@@ -55,7 +55,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('CommentItem - Focus Feature', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default mock for useAuth
     mockUseAuth.mockReturnValue({
       user: createTestUser(),
@@ -108,9 +108,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should not apply highlight styling when isHighlighted is undefined', () => {
       const comment = createTestComment();
 
-      const { container } = renderWithRouter(
-        <CommentItem comment={comment} userVote={0} />
-      );
+      const { container } = renderWithRouter(<CommentItem comment={comment} userVote={0} />);
 
       const commentDiv = container.querySelector(`#comment-${comment._id}`);
       expect(commentDiv).not.toHaveClass('bg-yellow-50');
@@ -133,9 +131,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should have unique id attribute based on comment _id', () => {
       const comment = createTestComment({ _id: 'unique-comment-123' });
 
-      const { container } = renderWithRouter(
-        <CommentItem comment={comment} userVote={0} />
-      );
+      const { container } = renderWithRouter(<CommentItem comment={comment} userVote={0} />);
 
       const commentDiv = container.querySelector('#comment-unique-comment-123');
       expect(commentDiv).toBeInTheDocument();
@@ -161,9 +157,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should show permalink button when postId is provided', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       expect(screen.getByText('permalink')).toBeInTheDocument();
     });
@@ -171,9 +165,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should not show permalink button when postId is not provided', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} />);
 
       expect(screen.queryByText('permalink')).not.toBeInTheDocument();
     });
@@ -181,9 +173,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should not show permalink button for deleted comments', () => {
       const comment = createTestComment({ is_deleted: true, content: '[deleted]' });
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       expect(screen.queryByText('permalink')).not.toBeInTheDocument();
     });
@@ -191,9 +181,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should have correct title attribute', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       expect(permalinkButton).toHaveAttribute('title', 'Copy link to comment');
@@ -202,9 +190,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should have proper styling classes', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       expect(permalinkButton).toHaveClass('text-gray-600');
@@ -222,9 +208,7 @@ describe('CommentItem - Focus Feature', () => {
       delete (window as any).location;
       window.location = { origin: 'http://localhost:3000' } as any;
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId={postId} />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId={postId} />);
 
       const permalinkButton = screen.getByText('permalink');
       fireEvent.click(permalinkButton);
@@ -239,9 +223,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should handle clipboard write success', async () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       fireEvent.click(permalinkButton);
@@ -262,9 +244,7 @@ describe('CommentItem - Focus Feature', () => {
         new Error('Clipboard access denied')
       );
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       fireEvent.click(permalinkButton);
@@ -278,9 +258,7 @@ describe('CommentItem - Focus Feature', () => {
       const comment = createTestComment();
 
       // Render without postId (button won't show, but testing the handler logic)
-      const { rerender } = renderWithRouter(
-        <CommentItem comment={comment} userVote={0} />
-      );
+      const { rerender } = renderWithRouter(<CommentItem comment={comment} userVote={0} />);
 
       // Rerender with postId
       rerender(
@@ -304,9 +282,7 @@ describe('CommentItem - Focus Feature', () => {
       delete (window as any).location;
       window.location = { origin: 'https://example.com' } as any;
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post456" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post456" />);
 
       const permalinkButton = screen.getByText('permalink');
       fireEvent.click(permalinkButton);
@@ -323,9 +299,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should have minimum touch target size on mobile', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       expect(permalinkButton).toHaveClass('min-h-[44px]');
@@ -335,9 +309,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should be keyboard accessible', () => {
       const comment = createTestComment();
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       expect(permalinkButton.tagName).toBe('BUTTON');
@@ -348,9 +320,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should show permalink alongside other action buttons', () => {
       const comment = createTestComment({ author_id: 'user1' });
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       // All action buttons should be visible
       expect(screen.getByText('reply')).toBeInTheDocument();
@@ -362,9 +332,7 @@ describe('CommentItem - Focus Feature', () => {
     it('should not show permalink when comment is being edited', () => {
       const comment = createTestComment({ author_id: 'user1' });
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       // Click edit button
       const editButton = screen.getByText('edit');
@@ -426,9 +394,7 @@ describe('CommentItem - Focus Feature', () => {
         writable: true,
       });
 
-      renderWithRouter(
-        <CommentItem comment={comment} userVote={0} postId="post123" />
-      );
+      renderWithRouter(<CommentItem comment={comment} userVote={0} postId="post123" />);
 
       const permalinkButton = screen.getByText('permalink');
       fireEvent.click(permalinkButton);

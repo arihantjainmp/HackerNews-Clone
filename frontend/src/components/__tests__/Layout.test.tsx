@@ -185,7 +185,7 @@ describe('Layout Component', () => {
 
       const logoutButtons = screen.getAllByText('Logout');
       expect(logoutButtons.length).toBeGreaterThan(0);
-      
+
       fireEvent.click(logoutButtons[0]!);
 
       await waitFor(() => {

@@ -95,14 +95,14 @@ export interface LoginRequest {
  * Request body for token refresh
  */
 export interface RefreshTokenRequest {
-  refreshToken: string;
+  // Empty body as token is in cookie
 }
 
 /**
  * Request body for logout
  */
 export interface LogoutRequest {
-  refreshToken: string;
+  // Empty body as token is in cookie
 }
 
 /**
@@ -154,16 +154,13 @@ export interface GetPostsParams {
  */
 export interface AuthResponse {
   user: User;
-  accessToken: string;
-  refreshToken: string;
 }
 
 /**
  * Response from token refresh endpoint
  */
 export interface RefreshTokenResponse {
-  accessToken: string;
-  refreshToken: string;
+  message: string;
 }
 
 /**

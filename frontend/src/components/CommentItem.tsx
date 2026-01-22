@@ -165,9 +165,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
    */
   const handlePermalinkClick = async () => {
     if (!postId) return;
-    
+
     const url = `${window.location.origin}/posts/${postId}?commentId=${comment._id}`;
-    
+
     try {
       await navigator.clipboard.writeText(url);
       // Show temporary success message
@@ -285,7 +285,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // ============================================================================
 
   return (
-    <div 
+    <div
       id={`comment-${comment._id}`}
       className={`flex gap-2 sm:gap-3 py-2 transition-colors ${
         isHighlighted ? 'bg-yellow-50 border-l-4 border-yellow-400 pl-2' : ''
@@ -407,11 +407,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         )}
 
         {/* Error Message */}
-        {error && (
-          <div className="text-xs text-red-600 mb-2">
-            {error}
-          </div>
-        )}
+        {error && <div className="text-xs text-red-600 mb-2">{error}</div>}
 
         {/* Action Buttons */}
         {!isEditing && !localIsDeleted && (

@@ -44,10 +44,10 @@ export interface IPostResponse {
 /**
  * Calculate the "best" score for a post using Hacker News algorithm
  * Formula: points / ((hours_since_creation + 2) ^ 1.8)
- * 
+ *
  * The gravity constant (1.8) causes older posts to decay in ranking.
  * The +2 offset prevents division issues for very new posts.
- * 
+ *
  * @param post - Post document with points and created_at
  * @returns Calculated best score
  */
@@ -61,7 +61,7 @@ export function calculateBestScore(post: IPost): number {
 /**
  * Sort posts by "new" - most recent first
  * Orders by created_at timestamp in descending order
- * 
+ *
  * @param posts - Array of posts to sort
  * @returns Sorted array (newest first)
  */
@@ -72,7 +72,7 @@ export function sortByNew(posts: IPost[]): IPost[] {
 /**
  * Sort posts by "top" - highest points first
  * Orders by points in descending order
- * 
+ *
  * @param posts - Array of posts to sort
  * @returns Sorted array (highest points first)
  */
@@ -84,7 +84,7 @@ export function sortByTop(posts: IPost[]): IPost[] {
  * Sort posts by "best" - Hacker News ranking algorithm
  * Orders by calculated score: points / ((hours + 2) ^ 1.8)
  * This balances recency and popularity
- * 
+ *
  * @param posts - Array of posts to sort
  * @returns Sorted array (best score first)
  */
@@ -116,7 +116,7 @@ export interface IGetPostsResponse {
 /**
  * Escape special regex characters in a string
  * This prevents regex injection and ensures literal string matching
- * 
+ *
  * @param str - String to escape
  * @returns Escaped string safe for use in regex
  */
@@ -126,7 +126,7 @@ function escapeRegex(str: string): string {
 
 /**
  * Get paginated posts with sorting and search functionality
- * 
+ *
  * Features:
  * - Pagination with configurable page and limit (defaults: page=1, limit=25)
  * - Three sorting methods: new (by date), top (by points), best (HN algorithm)
@@ -134,7 +134,7 @@ function escapeRegex(str: string): string {
  * - Populates author data for each post
  * - Fetches user's vote status for each post if userId is provided
  * - Caches responses for 5 minutes to improve performance
- * 
+ *
  * @param options - Query options for pagination, sorting, search, and user context
  * @returns Promise resolving to paginated posts with metadata
  */
@@ -152,7 +152,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
     limit,
     sort,
     search: search || '',
-    userId: userId || 'anonymous'
+    userId: userId || 'anonymous',
   });
 
   // Check cache first
@@ -163,7 +163,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
 
   // Build query filter
   const filter: any = {};
-  
+
   // Add case-insensitive search on title if provided
   // Escape special regex characters to prevent regex injection
   if (search && search.length > 0) {
@@ -180,26 +180,57 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
 
   // Fetch posts with author population
   // For "new" and "top" sorts, use database sorting for efficiency
-  // For "best" sort, fetch all matching posts and sort in memory (requires calculation)
+  // For "best" sort, use MongoDB aggregation to calculate scores and sort in the database
   let posts: any[];
-  
+
   if (sort === 'best') {
-    // For "best" sort, we need to calculate scores in memory
-    // Fetch all matching posts (not just the page) to ensure correct ranking
-    const allPosts = await Post.find(filter)
-      .populate('author_id', 'username email created_at')
-      .lean()
-      .exec();
-    
-    // Sort by best score
-    const sortedPosts = sortByBest(allPosts as any[]);
-    
-    // Apply pagination after sorting
-    posts = sortedPosts.slice(skip, skip + limit);
+    const now = new Date();
+    const GRAVITY = 1.8;
+
+    posts = await Post.aggregate([
+      { $match: filter },
+      {
+        $addFields: {
+          hoursOld: {
+            $divide: [{ $subtract: [now, '$created_at'] }, 1000 * 60 * 60],
+          },
+        },
+      },
+      {
+        $addFields: {
+          score: {
+            $divide: ['$points', { $pow: [{ $add: ['$hoursOld', 2] }, GRAVITY] }],
+          },
+        },
+      },
+      { $sort: { score: -1, created_at: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author_id',
+          foreignField: '_id',
+          as: 'author',
+        },
+      },
+      {
+        $addFields: {
+          author_id: { $arrayElemAt: ['$author', 0] },
+        },
+      },
+      {
+        $project: {
+          author: 0,
+          hoursOld: 0,
+          score: 0,
+        },
+      },
+    ]);
   } else {
     // For "new" and "top", use database sorting
     const sortField: Record<string, -1> = sort === 'top' ? { points: -1 } : { created_at: -1 };
-    
+
     posts = await Post.find(filter)
       .populate('author_id', 'username email created_at')
       .sort(sortField)
@@ -210,12 +241,12 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
   }
 
   // Fetch user votes if userId is provided
-  let userVotes: Map<string, number> = new Map();
+  const userVotes: Map<string, number> = new Map();
   if (userId && posts.length > 0) {
     try {
       const { getUserVote } = await import('./voteService');
       const postIds = posts.map((post: any) => post._id.toString());
-      
+
       // Fetch all votes in parallel for better performance
       const votePromises = postIds.map(async (postId: string) => {
         try {
@@ -226,7 +257,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
           return { postId, vote: 0 };
         }
       });
-      
+
       const voteResults = await Promise.all(votePromises);
       voteResults.forEach(({ postId, vote }) => {
         userVotes.set(postId, vote);
@@ -242,7 +273,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
     const postId = post._id.toString();
     const authorId = post.author_id;
     const isPopulated = authorId && typeof authorId === 'object' && '_id' in authorId;
-    
+
     return {
       _id: postId,
       title: post.title,
@@ -250,16 +281,18 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
       text: post.text,
       type: post.type,
       author_id: isPopulated ? authorId._id.toString() : authorId.toString(),
-      author: isPopulated ? {
-        _id: authorId._id.toString(),
-        username: authorId.username,
-        email: authorId.email,
-        created_at: authorId.created_at
-      } : undefined,
+      author: isPopulated
+        ? {
+            _id: authorId._id.toString(),
+            username: authorId.username,
+            email: authorId.email,
+            created_at: authorId.created_at,
+          }
+        : undefined,
       points: post.points,
       comment_count: post.comment_count,
       created_at: post.created_at,
-      userVote: userId ? userVotes.get(postId) : undefined
+      userVote: userId ? userVotes.get(postId) : undefined,
     };
   });
 
@@ -267,7 +300,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
     posts: postsResponse,
     total,
     page,
-    totalPages
+    totalPages,
   };
 
   // Cache the result for 5 minutes
@@ -278,7 +311,7 @@ export async function getPosts(options: IGetPostsOptions = {}): Promise<IGetPost
 
 /**
  * Get a single post by ID with populated author data
- * 
+ *
  * @param postId - The ID of the post to retrieve
  * @param userId - Optional user ID to fetch user's vote status
  * @returns Promise resolving to post with author data
@@ -316,7 +349,7 @@ export async function getPostById(postId: string, userId?: string): Promise<IPos
   // Transform to response format
   const authorId: any = post.author_id;
   const isPopulated = authorId && typeof authorId === 'object' && '_id' in authorId;
-  
+
   return {
     _id: post._id.toString(),
     title: post.title,
@@ -324,33 +357,35 @@ export async function getPostById(postId: string, userId?: string): Promise<IPos
     text: post.text,
     type: post.type,
     author_id: isPopulated ? authorId._id.toString() : authorId.toString(),
-    author: isPopulated ? {
-      _id: authorId._id.toString(),
-      username: authorId.username,
-      email: authorId.email,
-      created_at: authorId.created_at
-    } : undefined,
+    author: isPopulated
+      ? {
+          _id: authorId._id.toString(),
+          username: authorId.username,
+          email: authorId.email,
+          created_at: authorId.created_at,
+        }
+      : undefined,
     points: post.points,
     comment_count: post.comment_count,
     created_at: post.created_at,
-    userVote
+    userVote,
   };
 }
 
 /**
  * Create a new post with either URL or text content
- * 
+ *
  * Validates:
  * - Exactly one of url or text is provided (not both, not neither)
  * - Title length is between 1-300 characters
  * - Title is not empty or only whitespace
- * 
+ *
  * Initializes:
  * - points to 0
  * - comment_count to 0
  * - Sets type based on url/text presence
  * - Records author_id and created_at timestamp
- * 
+ *
  * @param data - Post creation data containing title, url/text, and authorId
  * @returns Promise resolving to created post
  * @throws ValidationError if validation fails
@@ -429,7 +464,7 @@ export async function createPost(data: ICreatePostData): Promise<IPostResponse> 
       author_id: post.author_id.toString(),
       points: post.points,
       comment_count: post.comment_count,
-      created_at: post.created_at
+      created_at: post.created_at,
     };
   } catch (error: any) {
     // Handle Mongoose validation errors

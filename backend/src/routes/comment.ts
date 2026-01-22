@@ -1,16 +1,7 @@
 import { Router, Request, Response } from 'express';
-import {
-  createComment,
-  createReply,
-  editComment,
-  deleteComment
-} from '../services/commentService';
+import { createComment, createReply, editComment, deleteComment } from '../services/commentService';
 import { authenticateToken } from '../middleware/auth';
-import {
-  validateRequest,
-  createCommentSchema,
-  editCommentSchema
-} from '../middleware/validation';
+import { validateRequest, createCommentSchema, editCommentSchema } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
@@ -19,19 +10,19 @@ const router = Router();
  * POST /api/posts/:postId/comments
  * Create a top-level comment on a post
  * Requires authentication
- * 
+ *
  * Request params:
  * - postId: string (post ID)
- * 
+ *
  * Request body:
  * - content: string (1-10000 characters, required)
- * 
+ *
  * Response:
  * - 201: { comment: IComment }
  * - 400: { errors: Array<{ field: string, message: string }> } - Validation errors
  * - 401: { error: string } - Authentication required
  * - 404: { error: string } - Post not found
- * 
+ *
  * Requirements: 6.8
  */
 router.post(
@@ -47,17 +38,17 @@ router.post(
     const comment = await createComment({
       content,
       postId: postId!,
-      authorId: userId
+      authorId: userId,
     });
 
     // Populate author information for frontend
     await comment.populate('author_id', 'username email created_at');
-    
+
     // Transform to rename author_id to author for frontend compatibility
     const commentResponse = {
       ...comment.toObject(),
       author: (comment as any).author_id,
-      author_id: comment.author_id._id || comment.author_id
+      author_id: comment.author_id._id || comment.author_id,
     };
 
     res.status(201).json({ comment: commentResponse });
@@ -68,19 +59,19 @@ router.post(
  * POST /api/comments/:commentId/replies
  * Create a reply to an existing comment
  * Requires authentication
- * 
+ *
  * Request params:
  * - commentId: string (parent comment ID)
- * 
+ *
  * Request body:
  * - content: string (1-10000 characters, required)
- * 
+ *
  * Response:
  * - 201: { comment: IComment }
  * - 400: { errors: Array<{ field: string, message: string }> } - Validation errors
  * - 401: { error: string } - Authentication required
  * - 404: { error: string } - Parent comment or post not found
- * 
+ *
  * Requirements: 6.9
  */
 router.post(
@@ -95,7 +86,7 @@ router.post(
     // We need to get the parent comment to find the post_id
     const { Comment } = await import('../models/Comment');
     const parentComment = await Comment.findById(commentId);
-    
+
     if (!parentComment) {
       res.status(404).json({ error: 'Parent comment not found' });
       return;
@@ -106,17 +97,17 @@ router.post(
       content,
       parentId: commentId!,
       postId: parentComment.post_id.toString(),
-      authorId: userId
+      authorId: userId,
     });
 
     // Populate author information for frontend
     await reply.populate('author_id', 'username email created_at');
-    
+
     // Transform to rename author_id to author for frontend compatibility
     const replyResponse = {
       ...reply.toObject(),
       author: (reply as any).author_id,
-      author_id: reply.author_id._id || reply.author_id
+      author_id: reply.author_id._id || reply.author_id,
     };
 
     res.status(201).json({ comment: replyResponse });
@@ -127,20 +118,20 @@ router.post(
  * PUT /api/comments/:id
  * Edit an existing comment
  * Requires authentication and user must be the comment author
- * 
+ *
  * Request params:
  * - id: string (comment ID)
- * 
+ *
  * Request body:
  * - content: string (1-10000 characters, required)
- * 
+ *
  * Response:
  * - 200: { comment: IComment }
  * - 400: { errors: Array<{ field: string, message: string }> } - Validation errors
  * - 401: { error: string } - Authentication required
  * - 403: { error: string } - User is not the comment author
  * - 404: { error: string } - Comment not found
- * 
+ *
  * Requirements: 7.7
  */
 router.put(
@@ -157,12 +148,12 @@ router.put(
 
     // Populate author information for frontend
     await comment.populate('author_id', 'username email created_at');
-    
+
     // Transform to rename author_id to author for frontend compatibility
     const commentResponse = {
       ...comment.toObject(),
       author: (comment as any).author_id,
-      author_id: comment.author_id._id || comment.author_id
+      author_id: comment.author_id._id || comment.author_id,
     };
 
     res.status(200).json({ comment: commentResponse });
@@ -173,16 +164,16 @@ router.put(
  * DELETE /api/comments/:id
  * Delete a comment (soft delete if has replies, hard delete otherwise)
  * Requires authentication and user must be the comment author
- * 
+ *
  * Request params:
  * - id: string (comment ID)
- * 
+ *
  * Response:
  * - 200: { message: string }
  * - 401: { error: string } - Authentication required
  * - 403: { error: string } - User is not the comment author
  * - 404: { error: string } - Comment not found
- * 
+ *
  * Requirements: 7.8
  */
 router.delete(

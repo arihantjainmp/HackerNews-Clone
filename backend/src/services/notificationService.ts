@@ -35,7 +35,7 @@ export interface INotificationResponse {
 /**
  * Create a notification when someone comments on a post
  * Only creates notification if the commenter is not the post author
- * 
+ *
  * @param postId - The ID of the post that was commented on
  * @param commentId - The ID of the new comment
  * @param senderId - The ID of the user who created the comment
@@ -75,14 +75,14 @@ export async function createPostCommentNotification(
     post_id: new Types.ObjectId(postId),
     comment_id: new Types.ObjectId(commentId),
     is_read: false,
-    created_at: new Date()
+    created_at: new Date(),
   });
 }
 
 /**
  * Create a notification when someone replies to a comment
  * Only creates notification if the replier is not the comment author
- * 
+ *
  * @param parentCommentId - The ID of the comment that was replied to
  * @param replyId - The ID of the new reply
  * @param postId - The ID of the post
@@ -127,7 +127,7 @@ export async function createCommentReplyNotification(
     post_id: new Types.ObjectId(postId),
     comment_id: new Types.ObjectId(replyId),
     is_read: false,
-    created_at: new Date()
+    created_at: new Date(),
   });
 }
 
@@ -135,7 +135,7 @@ export async function createCommentReplyNotification(
  * Get all notifications for a user
  * Returns notifications sorted by creation date (newest first)
  * Populates sender and post data
- * 
+ *
  * @param userId - The ID of the user
  * @param unreadOnly - If true, only return unread notifications
  * @returns Array of notifications with populated data
@@ -170,25 +170,27 @@ export async function getUserNotifications(
     recipient_id: notification.recipient_id.toString(),
     sender: {
       _id: notification.sender_id._id.toString(),
-      username: notification.sender_id.username
+      username: notification.sender_id.username,
     },
     type: notification.type,
     post: {
       _id: notification.post_id._id.toString(),
-      title: notification.post_id.title
+      title: notification.post_id.title,
     },
-    comment: notification.comment_id ? {
-      _id: notification.comment_id._id.toString(),
-      content: notification.comment_id.content
-    } : undefined,
+    comment: notification.comment_id
+      ? {
+          _id: notification.comment_id._id.toString(),
+          content: notification.comment_id.content,
+        }
+      : undefined,
     is_read: notification.is_read,
-    created_at: notification.created_at
+    created_at: notification.created_at,
   }));
 }
 
 /**
  * Mark a notification as read
- * 
+ *
  * @param notificationId - The ID of the notification
  * @param userId - The ID of the user (to verify ownership)
  * @throws NotFoundError if notification doesn't exist or doesn't belong to user
@@ -209,7 +211,7 @@ export async function markNotificationAsRead(
   const notification = await Notification.findOneAndUpdate(
     {
       _id: new Types.ObjectId(notificationId),
-      recipient_id: new Types.ObjectId(userId)
+      recipient_id: new Types.ObjectId(userId),
     },
     { is_read: true },
     { new: true }
@@ -222,7 +224,7 @@ export async function markNotificationAsRead(
 
 /**
  * Mark all notifications as read for a user
- * 
+ *
  * @param userId - The ID of the user
  */
 export async function markAllNotificationsAsRead(userId: string): Promise<void> {
@@ -239,7 +241,7 @@ export async function markAllNotificationsAsRead(userId: string): Promise<void> 
 
 /**
  * Get unread notification count for a user
- * 
+ *
  * @param userId - The ID of the user
  * @returns Number of unread notifications
  */
@@ -251,6 +253,6 @@ export async function getUnreadNotificationCount(userId: string): Promise<number
 
   return await Notification.countDocuments({
     recipient_id: new Types.ObjectId(userId),
-    is_read: false
+    is_read: false,
   });
 }

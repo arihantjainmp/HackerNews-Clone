@@ -24,40 +24,40 @@ const CommentSchema = new Schema<IComment>({
     type: String,
     required: [true, 'Content is required'],
     minlength: [1, 'Content must be at least 1 character'],
-    maxlength: [10000, 'Content must not exceed 10000 characters']
+    maxlength: [10000, 'Content must not exceed 10000 characters'],
   },
   post_id: {
     type: Schema.Types.ObjectId,
     ref: 'Post',
     required: [true, 'Post ID is required'],
-    index: true
+    index: true,
   },
   parent_id: {
     type: Schema.Types.ObjectId,
     ref: 'Comment',
     default: null,
-    index: true
+    index: true,
   },
   author_id: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Author ID is required']
+    required: [true, 'Author ID is required'],
   },
   points: {
     type: Number,
-    default: 0
+    default: 0,
   },
   created_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   edited_at: {
-    type: Date
+    type: Date,
   },
   is_deleted: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // Compound index for efficient tree queries (finding comments by post and parent)

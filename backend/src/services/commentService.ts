@@ -21,16 +21,16 @@ export interface ICommentNode {
 
 /**
  * Build comment tree using two-pass algorithm
- * 
+ *
  * Algorithm:
  * 1. First pass: Create a map of comment ID to node for O(1) lookup
  * 2. Second pass: Build parent-child relationships by linking nodes
- * 
+ *
  * Time complexity: O(n) where n is the number of comments
  * Space complexity: O(n) for the map and tree structure
- * 
+ *
  * Handles deleted comments by preserving structure with "[deleted]" content
- * 
+ *
  * @param comments - Array of comments to organize into tree
  * @returns Array of root-level comment nodes with nested replies
  */
@@ -43,7 +43,7 @@ export function buildCommentTree(comments: IComment[]): ICommentNode[] {
   for (const comment of comments) {
     commentMap.set(comment._id.toString(), {
       comment,
-      replies: []
+      replies: [],
     });
   }
 
@@ -72,7 +72,7 @@ export function buildCommentTree(comments: IComment[]): ICommentNode[] {
  * Validate comment content
  * Ensures content is not empty/whitespace and within length constraints
  * Also sanitizes content to prevent XSS attacks
- * 
+ *
  * @param content - The comment content to validate
  * @returns Sanitized content
  * @throws ValidationError if content is invalid
@@ -101,7 +101,7 @@ function validateAndSanitizeCommentContent(content: string): string {
 /**
  * Create a top-level comment on a post
  * Uses atomic operations to ensure consistency when incrementing post's comment_count
- * 
+ *
  * @param data - Comment creation data
  * @param data.content - The comment text content
  * @param data.postId - The ID of the post being commented on
@@ -142,17 +142,14 @@ export async function createComment(data: {
     author_id: new Types.ObjectId(authorId),
     points: 0,
     created_at: new Date(),
-    is_deleted: false
+    is_deleted: false,
   });
 
   await comment.save();
 
   // Atomically increment post's comment_count using $inc
   // This ensures consistency even with concurrent comment creation
-  await Post.findByIdAndUpdate(
-    postId,
-    { $inc: { comment_count: 1 } }
-  );
+  await Post.findByIdAndUpdate(postId, { $inc: { comment_count: 1 } });
 
   // Invalidate post list caches since comment_count changed
   cache.invalidateByPrefix('posts');
@@ -172,7 +169,7 @@ export async function createComment(data: {
 /**
  * Create a reply to an existing comment
  * Uses atomic operations to ensure consistency when incrementing post's comment_count
- * 
+ *
  * @param data - Reply creation data
  * @param data.content - The reply text content
  * @param data.parentId - The ID of the parent comment being replied to
@@ -224,17 +221,14 @@ export async function createReply(data: {
     author_id: new Types.ObjectId(authorId),
     points: 0,
     created_at: new Date(),
-    is_deleted: false
+    is_deleted: false,
   });
 
   await reply.save();
 
   // Atomically increment post's comment_count using $inc
   // This ensures consistency even with concurrent comment creation
-  await Post.findByIdAndUpdate(
-    postId,
-    { $inc: { comment_count: 1 } }
-  );
+  await Post.findByIdAndUpdate(postId, { $inc: { comment_count: 1 } });
 
   // Invalidate post list caches since comment_count changed
   cache.invalidateByPrefix('posts');
@@ -256,7 +250,7 @@ export async function createReply(data: {
  * Verifies that the user is the comment author before allowing edit
  * Validates new content using same rules as comment creation
  * Updates content and sets edited_at timestamp
- * 
+ *
  * @param commentId - The ID of the comment to edit
  * @param content - The new content for the comment
  * @param userId - The ID of the user attempting to edit
@@ -304,21 +298,18 @@ export async function editComment(
 /**
  * Delete a comment with soft delete logic
  * Uses atomic operations to ensure consistency
- * 
+ *
  * Deletion logic:
  * - If comment has replies: Soft delete (set is_deleted=true, content="[deleted]")
  * - If comment has no replies: Hard delete and decrement post's comment_count
- * 
+ *
  * @param commentId - The ID of the comment to delete
  * @param userId - The ID of the user attempting to delete
  * @throws ValidationError if IDs are invalid
  * @throws NotFoundError if comment doesn't exist
  * @throws ForbiddenError if user is not the comment author
  */
-export async function deleteComment(
-  commentId: string,
-  userId: string
-): Promise<void> {
+export async function deleteComment(commentId: string, userId: string): Promise<void> {
   // Validate ObjectIds
   if (!Types.ObjectId.isValid(commentId)) {
     throw new ValidationError('Invalid comment ID');
@@ -340,7 +331,7 @@ export async function deleteComment(
 
   // Check if comment has replies
   const replyCount = await Comment.countDocuments({
-    parent_id: new Types.ObjectId(commentId)
+    parent_id: new Types.ObjectId(commentId),
   });
 
   if (replyCount > 0) {
@@ -352,11 +343,8 @@ export async function deleteComment(
     // Hard delete: No replies, remove comment and decrement count
     // Use atomic operations to ensure consistency
     await Comment.findByIdAndDelete(commentId);
-    
+
     // Atomically decrement post's comment_count
-    await Post.findByIdAndUpdate(
-      comment.post_id,
-      { $inc: { comment_count: -1 } }
-    );
+    await Post.findByIdAndUpdate(comment.post_id, { $inc: { comment_count: -1 } });
   }
 }

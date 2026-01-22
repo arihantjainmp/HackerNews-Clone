@@ -15,7 +15,7 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useParams: () => ({ username: 'testuser' }),
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
   };
 });
 
@@ -24,7 +24,7 @@ const mockUserProfile = {
     _id: 'user123',
     username: 'testuser',
     email: 'test@example.com',
-    created_at: '2024-01-01T00:00:00.000Z'
+    created_at: '2024-01-01T00:00:00.000Z',
   },
   posts: [
     {
@@ -37,12 +37,12 @@ const mockUserProfile = {
         _id: 'user123',
         username: 'testuser',
         email: 'test@example.com',
-        created_at: '2024-01-01T00:00:00.000Z'
+        created_at: '2024-01-01T00:00:00.000Z',
       },
       points: 10,
       comment_count: 5,
-      created_at: '2024-01-15T00:00:00.000Z'
-    }
+      created_at: '2024-01-15T00:00:00.000Z',
+    },
   ],
   comments: [
     {
@@ -55,17 +55,17 @@ const mockUserProfile = {
         _id: 'user123',
         username: 'testuser',
         email: 'test@example.com',
-        created_at: '2024-01-01T00:00:00.000Z'
+        created_at: '2024-01-01T00:00:00.000Z',
       },
       points: 3,
       is_deleted: false,
-      created_at: '2024-01-16T00:00:00.000Z'
-    }
+      created_at: '2024-01-16T00:00:00.000Z',
+    },
   ],
   totalPosts: 1,
   totalComments: 1,
   page: 1,
-  totalPages: 1
+  totalPages: 1,
 };
 
 describe('User Page', () => {
@@ -106,7 +106,7 @@ describe('User Page', () => {
 
   it('should display error when user not found', async () => {
     vi.spyOn(userApi, 'getUserProfile').mockRejectedValue({
-      response: { status: 404 }
+      response: { status: 404 },
     });
 
     render(
@@ -170,7 +170,7 @@ describe('User Page', () => {
     const emptyProfile = {
       ...mockUserProfile,
       posts: [],
-      totalPosts: 0
+      totalPosts: 0,
     };
 
     vi.spyOn(userApi, 'getUserProfile').mockResolvedValue(emptyProfile);
@@ -194,7 +194,7 @@ describe('User Page', () => {
     const emptyProfile = {
       ...mockUserProfile,
       comments: [],
-      totalComments: 0
+      totalComments: 0,
     };
 
     vi.spyOn(userApi, 'getUserProfile').mockResolvedValue(emptyProfile);

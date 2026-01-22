@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 
 /**
  * Custom hook that debounces a value
- * 
+ *
  * @param value - The value to debounce
  * @param delay - The delay in milliseconds (default: 300ms)
  * @returns The debounced value
- * 
+ *
  * @example
  * const [searchInput, setSearchInput] = useState('');
  * const debouncedSearch = useDebounce(searchInput, 300);
- * 
+ *
  * useEffect(() => {
  *   // This will only run 300ms after the user stops typing
  *   fetchResults(debouncedSearch);

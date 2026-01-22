@@ -21,33 +21,33 @@ const VoteSchema = new Schema<IVote>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'User ID is required'],
-    index: true
+    index: true,
   },
   target_id: {
     type: Schema.Types.ObjectId,
     required: [true, 'Target ID is required'],
-    index: true
+    index: true,
   },
   target_type: {
     type: String,
     enum: {
       values: ['post', 'comment'],
-      message: 'Target type must be either "post" or "comment"'
+      message: 'Target type must be either "post" or "comment"',
     },
-    required: [true, 'Target type is required']
+    required: [true, 'Target type is required'],
   },
   direction: {
     type: Number,
     enum: {
       values: [1, -1],
-      message: 'Direction must be either 1 (upvote) or -1 (downvote)'
+      message: 'Direction must be either 1 (upvote) or -1 (downvote)',
     },
-    required: [true, 'Direction is required']
+    required: [true, 'Direction is required'],
   },
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Compound unique index: One vote per user per target (prevents duplicate votes)

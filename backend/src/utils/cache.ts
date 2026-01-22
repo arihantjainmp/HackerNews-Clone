@@ -22,7 +22,7 @@ class Cache {
 
   /**
    * Generate a cache key from parameters
-   * 
+   *
    * @param prefix - Cache key prefix (e.g., 'posts', 'votes')
    * @param params - Parameters to include in the key
    * @returns Cache key string
@@ -30,20 +30,20 @@ class Cache {
   generateKey(prefix: string, params: Record<string, any> = {}): string {
     const sortedParams = Object.keys(params)
       .sort()
-      .map(key => `${key}:${params[key]}`)
+      .map((key) => `${key}:${params[key]}`)
       .join('|');
     return sortedParams ? `${prefix}:${sortedParams}` : prefix;
   }
 
   /**
    * Get value from cache if it exists and hasn't expired
-   * 
+   *
    * @param key - Cache key
    * @returns Cached value or null if not found or expired
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -61,7 +61,7 @@ class Cache {
 
   /**
    * Set value in cache with TTL
-   * 
+   *
    * @param key - Cache key
    * @param data - Data to cache
    * @param ttl - Time to live in milliseconds (default: 5 minutes)
@@ -70,13 +70,13 @@ class Cache {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
   }
 
   /**
    * Invalidate (delete) a specific cache entry
-   * 
+   *
    * @param key - Cache key to invalidate
    */
   invalidate(key: string): void {
@@ -86,19 +86,19 @@ class Cache {
   /**
    * Invalidate all cache entries matching a prefix
    * Useful for invalidating all related entries (e.g., all post lists)
-   * 
+   *
    * @param prefix - Cache key prefix to match
    */
   invalidateByPrefix(prefix: string): void {
     const keysToDelete: string[] = [];
-    
+
     for (const key of this.cache.keys()) {
       if (key.startsWith(prefix)) {
         keysToDelete.push(key);
       }
     }
-    
-    keysToDelete.forEach(key => this.cache.delete(key));
+
+    keysToDelete.forEach((key) => this.cache.delete(key));
   }
 
   /**
@@ -110,13 +110,13 @@ class Cache {
 
   /**
    * Get cache statistics
-   * 
+   *
    * @returns Object with cache size and keys
    */
   getStats(): { size: number; keys: string[] } {
     return {
       size: this.cache.size,
-      keys: Array.from(this.cache.keys())
+      keys: Array.from(this.cache.keys()),
     };
   }
 }

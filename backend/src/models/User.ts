@@ -22,7 +22,7 @@ const UserSchema = new Schema<IUser>({
     unique: true,
     minlength: [3, 'Username must be at least 3 characters'],
     maxlength: [20, 'Username must not exceed 20 characters'],
-    trim: true
+    trim: true,
   },
   email: {
     type: String,
@@ -31,24 +31,26 @@ const UserSchema = new Schema<IUser>({
     lowercase: true,
     trim: true,
     validate: {
-      validator: function(v: string): boolean {
+      validator: function (v: string): boolean {
         // Email format validation regex - more strict to reject invalid formats
         // Rejects: consecutive dots, spaces, missing @ or domain parts
-        return /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) && 
-               !/\.\./.test(v) && // No consecutive dots
-               !/\s/.test(v); // No spaces
+        return (
+          /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) &&
+          !/\.\./.test(v) && // No consecutive dots
+          !/\s/.test(v)
+        ); // No spaces
       },
-      message: 'Invalid email format'
-    }
+      message: 'Invalid email format',
+    },
   },
   password_hash: {
     type: String,
-    required: [true, 'Password hash is required']
+    required: [true, 'Password hash is required'],
   },
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 /**

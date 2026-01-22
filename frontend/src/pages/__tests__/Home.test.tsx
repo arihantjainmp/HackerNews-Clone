@@ -71,15 +71,18 @@ describe('Home Page - Search Debouncing', () => {
       expect(postApi.getPosts).toHaveBeenCalledTimes(1); // Initial load only
 
       // Wait for debounce (300ms + buffer)
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(2);
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'new',
-          q: 't',
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(2);
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'new',
+            q: 't',
+          });
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should reset debounce timer on each keystroke', async () => {
@@ -89,26 +92,29 @@ describe('Home Page - Search Debouncing', () => {
 
       // Type characters quickly (within 300ms of each other)
       fireEvent.change(searchInput, { target: { value: 't' } });
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       fireEvent.change(searchInput, { target: { value: 'te' } });
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       fireEvent.change(searchInput, { target: { value: 'tes' } });
 
       // Should still only have initial load at this point
       expect(postApi.getPosts).toHaveBeenCalledTimes(1);
 
       // Wait for debounce to complete
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(2);
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'new',
-          q: 'tes',
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(2);
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'new',
+            q: 'tes',
+          });
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should only trigger one API call after typing stops', async () => {
@@ -123,15 +129,18 @@ describe('Home Page - Search Debouncing', () => {
       fireEvent.change(searchInput, { target: { value: 'test' } });
 
       // Wait for debounce
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(2); // Initial + debounced search
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'new',
-          q: 'test',
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(2); // Initial + debounced search
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'new',
+            q: 'test',
+          });
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should clear search when clear button is clicked', async () => {
@@ -142,9 +151,12 @@ describe('Home Page - Search Debouncing', () => {
       // Type in search
       fireEvent.change(searchInput, { target: { value: 'test' } });
 
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(2);
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 500 }
+      );
 
       // Click clear button
       const clearButton = screen.getByLabelText(/clear search/i);
@@ -154,15 +166,18 @@ describe('Home Page - Search Debouncing', () => {
       expect(searchInput).toHaveValue('');
 
       // Should trigger search with empty query after debounce
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(3);
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'new',
-          q: undefined,
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(3);
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'new',
+            q: undefined,
+          });
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should show clear button only when search input has value', () => {
@@ -198,10 +213,13 @@ describe('Home Page - Search Debouncing', () => {
       expect(screen.queryByText(/searching:/i)).not.toBeInTheDocument();
 
       // Wait for debounce - indicator should appear
-      await waitFor(() => {
-        expect(screen.getByText(/searching:/i)).toBeInTheDocument();
-        expect(screen.getByText('test query')).toBeInTheDocument();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(screen.getByText(/searching:/i)).toBeInTheDocument();
+          expect(screen.getByText('test query')).toBeInTheDocument();
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should handle rapid typing followed by deletion', async () => {
@@ -211,25 +229,31 @@ describe('Home Page - Search Debouncing', () => {
 
       // Type quickly
       fireEvent.change(searchInput, { target: { value: 'test' } });
-      
+
       // Wait for first debounce to trigger
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(2);
-      }, { timeout: 500 });
-      
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(2);
+        },
+        { timeout: 500 }
+      );
+
       // Now delete
       fireEvent.change(searchInput, { target: { value: '' } });
 
       // Should trigger search with empty query after debounce
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenCalledTimes(3);
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'new',
-          q: undefined,
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenCalledTimes(3);
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'new',
+            q: undefined,
+          });
+        },
+        { timeout: 500 }
+      );
     });
   });
 
@@ -289,14 +313,17 @@ describe('Home Page - Search Debouncing', () => {
       const searchInput = screen.getByPlaceholderText(/search posts/i);
       fireEvent.change(searchInput, { target: { value: 'test' } });
 
-      await waitFor(() => {
-        expect(postApi.getPosts).toHaveBeenLastCalledWith({
-          page: 1,
-          limit: 25,
-          sort: 'top',
-          q: 'test',
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(postApi.getPosts).toHaveBeenLastCalledWith({
+            page: 1,
+            limit: 25,
+            sort: 'top',
+            q: 'test',
+          });
+        },
+        { timeout: 500 }
+      );
     });
   });
 

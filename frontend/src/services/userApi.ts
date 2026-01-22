@@ -15,7 +15,7 @@ export const getUserProfile = async (
   limit: number = 20
 ): Promise<UserProfile> => {
   const response = await apiClient.get<UserProfile>(`/api/users/${username}`, {
-    params: { page, limit }
+    params: { page, limit },
   });
   return response.data;
 };

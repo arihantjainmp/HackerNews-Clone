@@ -153,12 +153,10 @@ export const User: React.FC = () => {
             ) : (
               <div className="p-8 text-center text-gray-500">No posts yet</div>
             )
+          ) : comments.length > 0 ? (
+            comments.map((comment) => <CommentActivity key={comment._id} comment={comment} />)
           ) : (
-            comments.length > 0 ? (
-              comments.map((comment) => <CommentActivity key={comment._id} comment={comment} />)
-            ) : (
-              <div className="p-8 text-center text-gray-500">No comments yet</div>
-            )
+            <div className="p-8 text-center text-gray-500">No comments yet</div>
           )}
         </div>
       </div>
@@ -182,10 +180,7 @@ const PostActivity: React.FC<PostActivityProps> = ({ post }) => {
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-    >
+    <div onClick={handleClick} className="p-4 hover:bg-gray-50 cursor-pointer transition-colors">
       <div className="flex items-start gap-3">
         {/* Points */}
         <div className="flex flex-col items-center min-w-[48px]">
@@ -199,9 +194,7 @@ const PostActivity: React.FC<PostActivityProps> = ({ post }) => {
             {post.title}
           </h3>
           {post.type === 'link' && post.url && (
-            <p className="text-xs text-gray-500 mt-1">
-              {new URL(post.url).hostname}
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{new URL(post.url).hostname}</p>
           )}
           <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
             <span>{formatTimeAgo(post.created_at)}</span>
@@ -226,19 +219,17 @@ const CommentActivity: React.FC<CommentActivityProps> = ({ comment }) => {
   const navigate = useNavigate();
 
   // Extract post ID - handle both string and populated object
-  const postId = typeof comment.post_id === 'string' 
-    ? comment.post_id 
-    : (comment.post_id as any)?._id || comment.post_id;
+  const postId =
+    typeof comment.post_id === 'string'
+      ? comment.post_id
+      : (comment.post_id as any)?._id || comment.post_id;
 
   const handleClick = () => {
     navigate(`/posts/${postId}?commentId=${comment._id}`);
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-    >
+    <div onClick={handleClick} className="p-4 hover:bg-gray-50 cursor-pointer transition-colors">
       <div className="flex items-start gap-3">
         {/* Points */}
         <div className="flex flex-col items-center min-w-[48px]">
@@ -248,9 +239,7 @@ const CommentActivity: React.FC<CommentActivityProps> = ({ comment }) => {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-800 break-words line-clamp-3">
-            {comment.content}
-          </p>
+          <p className="text-sm text-gray-800 break-words line-clamp-3">{comment.content}</p>
           <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
             <span>{formatTimeAgo(comment.created_at)}</span>
             <span>•</span>

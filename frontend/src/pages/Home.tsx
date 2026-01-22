@@ -26,7 +26,7 @@ export const Home: React.FC = () => {
   // State for sorting and search
   const [sort, setSort] = useState<SortOption>(initialSort);
   const [searchInput, setSearchInput] = useState(initialSearch);
-  
+
   // Debounce search input with 300ms delay
   // Requirement 22.5: Implement debouncing for search input to reduce unnecessary API calls
   const debouncedSearch = useDebounce(searchInput, 300);

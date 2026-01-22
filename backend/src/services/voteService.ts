@@ -12,7 +12,7 @@ import { cache } from '../utils/cache';
 
 /**
  * Handle vote on a target (post or comment) with atomic state transitions
- * 
+ *
  * Vote State Machine:
  * - NO_VOTE → UPVOTE: +1 point
  * - NO_VOTE → DOWNVOTE: -1 point
@@ -20,7 +20,7 @@ import { cache } from '../utils/cache';
  * - UPVOTE → DOWNVOTE: -2 points
  * - DOWNVOTE → UPVOTE: +2 points
  * - DOWNVOTE → DOWNVOTE: +1 point (toggle off, remove vote)
- * 
+ *
  * @param userId - The ID of the user casting the vote
  * @param targetId - The ID of the post or comment being voted on
  * @param targetType - Either 'post' or 'comment'
@@ -37,7 +37,7 @@ export async function handleVote(
   // Find existing vote for this user on this target
   const existingVote = await Vote.findOne({
     user_id: userId,
-    target_id: targetId
+    target_id: targetId,
   });
 
   let pointsDelta = 0;
@@ -46,32 +46,29 @@ export async function handleVote(
   if (!existingVote) {
     // State transition: NO_VOTE → UPVOTE or NO_VOTE → DOWNVOTE
     pointsDelta = newDirection;
-    
+
     // Create new vote record
     await Vote.create({
       user_id: userId,
       target_id: targetId,
       target_type: targetType,
-      direction: newDirection
+      direction: newDirection,
     });
   } else if (existingVote.direction === newDirection) {
     // State transition: UPVOTE → UPVOTE or DOWNVOTE → DOWNVOTE
     // Toggle off - remove the vote
     pointsDelta = -newDirection;
     finalUserVote = 0 as const;
-    
+
     // Delete the vote record
     await Vote.deleteOne({ _id: existingVote._id });
   } else {
     // State transition: UPVOTE → DOWNVOTE or DOWNVOTE → UPVOTE
     // Calculate delta: new direction - old direction = ±2
     pointsDelta = newDirection - existingVote.direction;
-    
+
     // Update existing vote record
-    await Vote.updateOne(
-      { _id: existingVote._id },
-      { $set: { direction: newDirection } }
-    );
+    await Vote.updateOne({ _id: existingVote._id }, { $set: { direction: newDirection } });
   }
 
   // Atomically update points on target using $inc operator
@@ -84,7 +81,9 @@ export async function handleVote(
   );
 
   if (!updatedTarget) {
-    throw new NotFoundError(`${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`);
+    throw new NotFoundError(
+      `${targetType.charAt(0).toUpperCase() + targetType.slice(1)} not found`
+    );
   }
 
   // Invalidate cached user vote state
@@ -98,13 +97,13 @@ export async function handleVote(
 
   return {
     points: updatedTarget.points,
-    userVote: finalUserVote
+    userVote: finalUserVote,
   };
 }
 
 /**
  * Vote on a post
- * 
+ *
  * @param userId - The ID of the user casting the vote
  * @param postId - The ID of the post being voted on
  * @param direction - 1 for upvote, -1 for downvote
@@ -120,7 +119,7 @@ export async function voteOnPost(
 
 /**
  * Vote on a comment
- * 
+ *
  * @param userId - The ID of the user casting the vote
  * @param commentId - The ID of the comment being voted on
  * @param direction - 1 for upvote, -1 for downvote
@@ -137,15 +136,12 @@ export async function voteOnComment(
 /**
  * Get user's current vote on a target (post or comment)
  * Caches the result to improve performance
- * 
+ *
  * @param userId - The ID of the user
  * @param targetId - The ID of the post or comment
  * @returns 1 for upvote, -1 for downvote, 0 for no vote
  */
-export async function getUserVote(
-  userId: string,
-  targetId: string
-): Promise<number> {
+export async function getUserVote(userId: string, targetId: string): Promise<number> {
   // Generate cache key for this user's vote on this target
   const cacheKey = cache.generateKey('vote', { userId, targetId });
 

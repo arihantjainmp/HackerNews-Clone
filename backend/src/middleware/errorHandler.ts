@@ -4,15 +4,10 @@ import { AppError } from '../utils/errors';
 /**
  * Centralized error handling middleware
  * Logs all errors and returns appropriate HTTP responses
- * 
+ *
  * Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7
  */
-export function errorHandler(
-  err: Error,
-  req: Request,
-  res: Response,
-  _next: NextFunction
-): void {
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
   // Log error with full context
   // Requirement 13.1: Log all errors with timestamp, method, path, message, and stack trace
   console.error({
@@ -21,14 +16,14 @@ export function errorHandler(
     path: req.path,
     message: err.message,
     stack: err.stack,
-    ...(err instanceof AppError && { statusCode: err.statusCode })
+    ...(err instanceof AppError && { statusCode: err.statusCode }),
   });
 
   // Handle AppError instances (custom errors with status codes)
   if (err instanceof AppError) {
     // Requirement 13.6: Never expose internal details in production
     const response: { error: string; details?: string } = {
-      error: err.message
+      error: err.message,
     };
 
     // Only include stack trace in development
@@ -71,7 +66,7 @@ export function errorHandler(
   // Default to 500 for unexpected errors
   // Requirement 13.6: Return 500 without exposing internal details
   const response: { error: string; details?: string } = {
-    error: 'Internal server error'
+    error: 'Internal server error',
   };
 
   // Only include error details in development
@@ -85,7 +80,7 @@ export function errorHandler(
 /**
  * Async error wrapper for route handlers
  * Catches async errors and passes them to error handling middleware
- * 
+ *
  * Usage: router.get('/path', asyncHandler(async (req, res) => { ... }))
  */
 export function asyncHandler(

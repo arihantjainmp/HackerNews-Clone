@@ -24,7 +24,7 @@ export async function getNotifications(
 
     res.status(200).json({
       success: true,
-      data: notifications
+      data: notifications,
     });
   } catch (error) {
     next(error);
@@ -46,7 +46,7 @@ export async function getUnreadCount(
 
     res.status(200).json({
       success: true,
-      data: { count }
+      data: { count },
     });
   } catch (error) {
     next(error);
@@ -56,11 +56,7 @@ export async function getUnreadCount(
 /**
  * Mark a notification as read
  */
-export async function markAsRead(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function markAsRead(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const userId = req.userId!;
     const notificationId = req.params.id!;
@@ -69,7 +65,7 @@ export async function markAsRead(
 
     res.status(200).json({
       success: true,
-      message: 'Notification marked as read'
+      message: 'Notification marked as read',
     });
   } catch (error) {
     next(error);
@@ -91,7 +87,7 @@ export async function markAllAsRead(
 
     res.status(200).json({
       success: true,
-      message: 'All notifications marked as read'
+      message: 'All notifications marked as read',
     });
   } catch (error) {
     next(error);

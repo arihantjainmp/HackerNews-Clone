@@ -23,38 +23,38 @@ const NotificationSchema = new Schema<INotification>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'Recipient ID is required'],
-    index: true
+    index: true,
   },
   sender_id: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Sender ID is required']
+    required: [true, 'Sender ID is required'],
   },
   type: {
     type: String,
     enum: {
       values: ['comment_reply', 'post_comment'],
-      message: 'Type must be either "comment_reply" or "post_comment"'
+      message: 'Type must be either "comment_reply" or "post_comment"',
     },
-    required: [true, 'Type is required']
+    required: [true, 'Type is required'],
   },
   post_id: {
     type: Schema.Types.ObjectId,
     ref: 'Post',
-    required: [true, 'Post ID is required']
+    required: [true, 'Post ID is required'],
   },
   comment_id: {
     type: Schema.Types.ObjectId,
-    ref: 'Comment'
+    ref: 'Comment',
   },
   is_read: {
     type: Boolean,
-    default: false
+    default: false,
   },
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Compound index for efficient queries (finding unread notifications for a user)

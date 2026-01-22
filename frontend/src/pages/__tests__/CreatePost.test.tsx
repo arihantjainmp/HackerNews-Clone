@@ -254,7 +254,11 @@ describe('CreatePost Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(postApi.createPost).toHaveBeenCalledWith('Test Title', 'http://example.com', undefined);
+        expect(postApi.createPost).toHaveBeenCalledWith(
+          'Test Title',
+          'http://example.com',
+          undefined
+        );
       });
     });
 
@@ -284,7 +288,11 @@ describe('CreatePost Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(postApi.createPost).toHaveBeenCalledWith('Test Title', 'https://example.com', undefined);
+        expect(postApi.createPost).toHaveBeenCalledWith(
+          'Test Title',
+          'https://example.com',
+          undefined
+        );
       });
     });
   });
@@ -470,7 +478,11 @@ describe('CreatePost Page', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(postApi.createPost).toHaveBeenCalledWith('Test Title', 'https://example.com', undefined);
+        expect(postApi.createPost).toHaveBeenCalledWith(
+          'Test Title',
+          'https://example.com',
+          undefined
+        );
       });
     });
   });
@@ -478,18 +490,25 @@ describe('CreatePost Page', () => {
   describe('Loading State', () => {
     it('should show loading state during submission', async () => {
       vi.mocked(postApi.createPost).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({
-          post: {
-            _id: 'post1',
-            title: 'Test Title',
-            type: 'link',
-            url: 'https://example.com',
-            author_id: 'user1',
-            points: 0,
-            comment_count: 0,
-            created_at: new Date().toISOString(),
-          },
-        }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  post: {
+                    _id: 'post1',
+                    title: 'Test Title',
+                    type: 'link',
+                    url: 'https://example.com',
+                    author_id: 'user1',
+                    points: 0,
+                    comment_count: 0,
+                    created_at: new Date().toISOString(),
+                  },
+                }),
+              100
+            )
+          )
       );
 
       renderCreatePost();
@@ -510,18 +529,25 @@ describe('CreatePost Page', () => {
 
     it('should disable form during submission', async () => {
       vi.mocked(postApi.createPost).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({
-          post: {
-            _id: 'post1',
-            title: 'Test Title',
-            type: 'link',
-            url: 'https://example.com',
-            author_id: 'user1',
-            points: 0,
-            comment_count: 0,
-            created_at: new Date().toISOString(),
-          },
-        }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  post: {
+                    _id: 'post1',
+                    title: 'Test Title',
+                    type: 'link',
+                    url: 'https://example.com',
+                    author_id: 'user1',
+                    points: 0,
+                    comment_count: 0,
+                    created_at: new Date().toISOString(),
+                  },
+                }),
+              100
+            )
+          )
       );
 
       renderCreatePost();
@@ -544,18 +570,25 @@ describe('CreatePost Page', () => {
 
     it('should prevent double submission', async () => {
       vi.mocked(postApi.createPost).mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve({
-          post: {
-            _id: 'post1',
-            title: 'Test Title',
-            type: 'link',
-            url: 'https://example.com',
-            author_id: 'user1',
-            points: 0,
-            comment_count: 0,
-            created_at: new Date().toISOString(),
-          },
-        }), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  post: {
+                    _id: 'post1',
+                    title: 'Test Title',
+                    type: 'link',
+                    url: 'https://example.com',
+                    author_id: 'user1',
+                    points: 0,
+                    comment_count: 0,
+                    created_at: new Date().toISOString(),
+                  },
+                }),
+              100
+            )
+          )
       );
 
       renderCreatePost();
@@ -567,16 +600,19 @@ describe('CreatePost Page', () => {
       fireEvent.change(urlInput, { target: { value: 'https://example.com' } });
 
       const submitButton = screen.getByRole('button', { name: /submit post/i });
-      
+
       // Click multiple times
       fireEvent.click(submitButton);
       fireEvent.click(submitButton);
       fireEvent.click(submitButton);
 
       // Wait for submission to complete
-      await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalled();
-      }, { timeout: 200 });
+      await waitFor(
+        () => {
+          expect(mockNavigate).toHaveBeenCalled();
+        },
+        { timeout: 200 }
+      );
 
       // API should only be called once despite multiple clicks
       expect(postApi.createPost).toHaveBeenCalledTimes(1);

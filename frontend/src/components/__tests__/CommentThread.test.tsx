@@ -57,7 +57,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('CommentThread', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default mock for useAuth
     mockUseAuth.mockReturnValue({
       user: createTestUser(),
@@ -73,7 +73,7 @@ describe('CommentThread', () => {
   describe('Rendering', () => {
     it('should render empty when comments array is empty', () => {
       const { container } = renderWithRouter(<CommentThread comments={[]} />);
-      
+
       expect(container.firstChild).toBeNull();
     });
 
@@ -118,9 +118,7 @@ describe('CommentThread', () => {
       });
 
       const nodes = [
-        createCommentNode(comment1, [
-          createCommentNode(reply1, [createCommentNode(reply2)]),
-        ]),
+        createCommentNode(comment1, [createCommentNode(reply1, [createCommentNode(reply2)])]),
       ];
 
       renderWithRouter(<CommentThread comments={nodes} />);
@@ -302,14 +300,14 @@ describe('CommentThread', () => {
     it('should handle deeply nested comments gracefully', () => {
       // Create 3 levels of nesting (within the collapse threshold)
       let currentNode: CommentNode | null = null;
-      
+
       for (let i = 3; i >= 1; i--) {
         const comment = createTestComment({
           _id: `level${i}`,
           content: `Level ${i}`,
           parent_id: i > 1 ? `level${i - 1}` : null,
         });
-        
+
         currentNode = createCommentNode(comment, currentNode ? [currentNode] : []);
       }
 

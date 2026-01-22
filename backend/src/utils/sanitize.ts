@@ -58,11 +58,11 @@ export function sanitizeUrl(url: string): string {
   }
 
   const trimmedUrl = url.trim();
-  
+
   // Check for dangerous protocols
   const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
   const lowerUrl = trimmedUrl.toLowerCase();
-  
+
   for (const protocol of dangerousProtocols) {
     if (lowerUrl.startsWith(protocol)) {
       return ''; // Return empty string for dangerous URLs

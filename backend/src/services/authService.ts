@@ -1,7 +1,12 @@
 import { User } from '../models/User';
 import { RefreshToken } from '../models/RefreshToken';
 import { hashPassword, validatePasswordStrength, comparePassword } from '../utils/password';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, TokenPayload } from '../utils/jwt';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  TokenPayload,
+} from '../utils/jwt';
 import { ValidationError, AuthenticationError } from '../utils/errors';
 
 /**
@@ -25,7 +30,7 @@ export interface ILoginResponse {
 
 /**
  * Register a new user with hashed password
- * 
+ *
  * @param username - Unique username (3-20 characters)
  * @param email - Unique email address
  * @param password - Password meeting strength requirements
@@ -40,7 +45,7 @@ export async function register(
   // Validate password strength before hashing
   const passwordValidation = validatePasswordStrength(password);
   if (!passwordValidation.isValid) {
-    throw new ValidationError(passwordValidation.error!);
+    throw new ValidationError(passwordValidation.error);
   }
 
   try {
@@ -51,7 +56,7 @@ export async function register(
     const user = await User.create({
       username,
       email,
-      password_hash
+      password_hash,
     });
 
     // Return user without password_hash
@@ -59,7 +64,7 @@ export async function register(
       _id: user._id.toString(),
       username: user.username,
       email: user.email,
-      created_at: user.created_at
+      created_at: user.created_at,
     };
   } catch (error: any) {
     // Handle duplicate username/email errors (MongoDB E11000)
@@ -74,33 +79,30 @@ export async function register(
 
 /**
  * Authenticate user and generate tokens
- * 
+ *
  * @param email - User's email address
  * @param password - User's plaintext password
  * @returns Promise resolving to user data and authentication tokens
  * @throws AuthenticationError if credentials are invalid
  */
-export async function login(
-  email: string,
-  password: string
-): Promise<ILoginResponse> {
+export async function login(email: string, password: string): Promise<ILoginResponse> {
   // Find user by email
   const user = await User.findOne({ email: email.toLowerCase() });
-  
+
   if (!user) {
     throw new AuthenticationError('Invalid email or password');
   }
 
   // Compare password with stored hash
   const isPasswordValid = await comparePassword(password, user.password_hash);
-  
+
   if (!isPasswordValid) {
     throw new AuthenticationError('Invalid email or password');
   }
 
   // Generate Access_Token (15 minutes expiration)
   const accessTokenResult = generateAccessToken(user._id.toString());
-  
+
   // Generate Refresh_Token (7 days expiration)
   const refreshTokenResult = generateRefreshToken(user._id.toString());
 
@@ -108,7 +110,7 @@ export async function login(
   await RefreshToken.create({
     user_id: user._id,
     token: refreshTokenResult.token,
-    expires_at: refreshTokenResult.expiresAt
+    expires_at: refreshTokenResult.expiresAt,
   });
 
   // Return user (without password_hash) and tokens
@@ -117,10 +119,10 @@ export async function login(
       _id: user._id.toString(),
       username: user.username,
       email: user.email,
-      created_at: user.created_at
+      created_at: user.created_at,
     },
     accessToken: accessTokenResult.token,
-    refreshToken: refreshTokenResult.token
+    refreshToken: refreshTokenResult.token,
   };
 }
 
@@ -128,7 +130,7 @@ export async function login(
  * Refresh access token using a valid refresh token
  * Implements token rotation: marks old refresh token as used and generates new tokens
  * Uses atomic findOneAndUpdate to prevent concurrent refresh token reuse
- * 
+ *
  * @param refreshToken - The refresh token to exchange for new tokens
  * @returns Promise resolving to new access token and refresh token
  * @throws AuthenticationError if refresh token is invalid, expired, or already used
@@ -150,16 +152,16 @@ export async function refreshAccessToken(
     {
       token: refreshToken,
       expires_at: { $gt: new Date() }, // Verify not expired in database
-      is_used: false // Only allow unused tokens
+      is_used: false, // Only allow unused tokens
     },
     {
       $set: {
         is_used: true,
-        used_at: new Date()
-      }
+        used_at: new Date(),
+      },
     },
     {
-      new: false // Return original document before update
+      new: false, // Return original document before update
     }
   );
 
@@ -178,19 +180,19 @@ export async function refreshAccessToken(
   await RefreshToken.create({
     user_id: tokenDoc.user_id,
     token: newRefreshTokenResult.token,
-    expires_at: newRefreshTokenResult.expiresAt
+    expires_at: newRefreshTokenResult.expiresAt,
   });
 
   return {
     accessToken: newAccessTokenResult.token,
-    refreshToken: newRefreshTokenResult.token
+    refreshToken: newRefreshTokenResult.token,
   };
 }
 
 /**
  * Logout user by invalidating their refresh token
  * Marks the refresh token as used so it cannot be used again
- * 
+ *
  * @param refreshToken - The refresh token to invalidate
  * @returns Promise resolving when token is invalidated
  * @throws AuthenticationError if refresh token is not found or already used
@@ -200,16 +202,16 @@ export async function logout(refreshToken: string): Promise<void> {
   const tokenDoc = await RefreshToken.findOneAndUpdate(
     {
       token: refreshToken,
-      is_used: false // Only invalidate tokens that haven't been used
+      is_used: false, // Only invalidate tokens that haven't been used
     },
     {
       $set: {
         is_used: true,
-        used_at: new Date()
-      }
+        used_at: new Date(),
+      },
     },
     {
-      new: false // Return original document before update
+      new: false, // Return original document before update
     }
   );
 

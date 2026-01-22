@@ -56,7 +56,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('CommentItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default mock for useAuth
     mockUseAuth.mockReturnValue({
       user: createTestUser(),
@@ -92,7 +92,7 @@ describe('CommentItem', () => {
       // Check that [deleted] appears in both author and content
       const deletedTexts = screen.getAllByText('[deleted]');
       expect(deletedTexts).toHaveLength(2); // Author and content
-      
+
       // Verify action buttons are not shown
       expect(screen.queryByText('reply')).not.toBeInTheDocument();
       expect(screen.queryByText('edit')).not.toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('CommentItem', () => {
 
     it('should show error message when not authenticated', () => {
       const comment = createTestComment();
-      
+
       // Mock unauthenticated state
       mockUseAuth.mockReturnValue({
         user: null,
@@ -210,7 +210,7 @@ describe('CommentItem', () => {
 
     it('should show error when not authenticated and clicking reply', () => {
       const comment = createTestComment();
-      
+
       // Mock unauthenticated state
       mockUseAuth.mockReturnValue({
         user: null,

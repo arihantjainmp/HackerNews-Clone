@@ -290,7 +290,7 @@ describe('CommentForm', () => {
       fireEvent.change(textarea, { target: { value: 'Test comment' } });
 
       const form = textarea.closest('form');
-      
+
       // Submit twice quickly
       fireEvent.submit(form!);
       fireEvent.submit(form!);
@@ -346,7 +346,7 @@ describe('CommentForm', () => {
       renderWithRouter(<CommentForm postId="post1" />);
 
       const textarea = screen.getByPlaceholderText('Write a comment...');
-      
+
       // Trigger validation error
       fireEvent.change(textarea, { target: { value: '   ' } });
       const form = textarea.closest('form');

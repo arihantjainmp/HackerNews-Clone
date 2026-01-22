@@ -30,10 +30,9 @@ export const createComment = async (
   postId: string,
   content: string
 ): Promise<CreateCommentResponse> => {
-  const response = await apiClient.post<CreateCommentResponse>(
-    `/api/posts/${postId}/comments`,
-    { content } as CreateCommentRequest
-  );
+  const response = await apiClient.post<CreateCommentResponse>(`/api/posts/${postId}/comments`, {
+    content,
+  } as CreateCommentRequest);
 
   return response.data;
 };
@@ -75,10 +74,9 @@ export const editComment = async (
   commentId: string,
   content: string
 ): Promise<EditCommentResponse> => {
-  const response = await apiClient.put<EditCommentResponse>(
-    `/api/comments/${commentId}`,
-    { content } as EditCommentRequest
-  );
+  const response = await apiClient.put<EditCommentResponse>(`/api/comments/${commentId}`, {
+    content,
+  } as EditCommentRequest);
 
   return response.data;
 };
@@ -111,10 +109,9 @@ export const voteOnComment = async (
   commentId: string,
   direction: 1 | -1
 ): Promise<VoteResponse> => {
-  const response = await apiClient.post<VoteResponse>(
-    `/api/comments/${commentId}/vote`,
-    { direction } as VoteRequest
-  );
+  const response = await apiClient.post<VoteResponse>(`/api/comments/${commentId}/vote`, {
+    direction,
+  } as VoteRequest);
 
   return response.data;
 };

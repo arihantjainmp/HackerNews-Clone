@@ -10,19 +10,19 @@ const router = Router();
  * POST /api/posts/:id/vote
  * Vote on a post (upvote or downvote)
  * Requires authentication
- * 
+ *
  * Request params:
  * - id: string (post ID)
- * 
+ *
  * Request body:
  * - direction: number (1 for upvote, -1 for downvote)
- * 
+ *
  * Response:
  * - 200: { points: number, userVote: number }
  * - 400: { errors: Array<{ field: string, message: string }> } - Validation errors
  * - 401: { error: string } - Authentication required
  * - 404: { error: string } - Post not found
- * 
+ *
  * Requirements: 5.9
  */
 router.post(
@@ -45,19 +45,19 @@ router.post(
  * POST /api/comments/:id/vote
  * Vote on a comment (upvote or downvote)
  * Requires authentication
- * 
+ *
  * Request params:
  * - id: string (comment ID)
- * 
+ *
  * Request body:
  * - direction: number (1 for upvote, -1 for downvote)
- * 
+ *
  * Response:
  * - 200: { points: number, userVote: number }
  * - 400: { errors: Array<{ field: string, message: string }> } - Validation errors
  * - 401: { error: string } - Authentication required
  * - 404: { error: string } - Comment not found
- * 
+ *
  * Requirements: 8.8
  */
 router.post(

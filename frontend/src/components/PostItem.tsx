@@ -229,8 +229,8 @@ export const PostItem: React.FC<PostItemProps> = ({ post, userVote = 0, onVoteUp
           <span className="hidden sm:inline">•</span>
           <span>{formatTimeAgo(post.created_at)}</span>
           <span className="hidden sm:inline">•</span>
-          <button 
-            onClick={handleCommentsClick} 
+          <button
+            onClick={handleCommentsClick}
             className="hover:text-orange-600 transition-colors min-h-[44px] sm:min-h-0 flex items-center"
           >
             {post.comment_count} {post.comment_count === 1 ? 'comment' : 'comments'}

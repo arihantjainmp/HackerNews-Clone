@@ -148,8 +148,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
       }
     } catch (err: any) {
       // Display error message
-      const errorMessage =
-        err.response?.data?.error || 'Failed to post comment. Please try again.';
+      const errorMessage = err.response?.data?.error || 'Failed to post comment. Please try again.';
       setError(errorMessage);
       console.error('Comment submission failed:', err);
     } finally {
@@ -208,11 +207,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
 
       {/* Character count (shown when approaching limit) */}
       {showCharCount && (
-        <div
-          className={`text-xs mt-1 ${
-            remainingChars < 0 ? 'text-red-600' : 'text-gray-500'
-          }`}
-        >
+        <div className={`text-xs mt-1 ${remainingChars < 0 ? 'text-red-600' : 'text-gray-500'}`}>
           {remainingChars < 0
             ? `${Math.abs(remainingChars)} characters over limit`
             : `${remainingChars} characters remaining`}

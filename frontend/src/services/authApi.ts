@@ -2,15 +2,13 @@
  * Authentication API service
  *
  * Provides functions for authentication-related API calls
- * Uses the configured API client with automatic token management
+ * Uses the configured API client with automatic cookie-based management
  */
 
-import apiClient, { setStoredTokens, clearStoredTokens } from './api';
+import apiClient from './api';
 import type {
   SignupRequest,
   LoginRequest,
-  RefreshTokenRequest,
-  LogoutRequest,
   AuthResponse,
   RefreshTokenResponse,
   LogoutResponse,
@@ -22,7 +20,7 @@ import type {
  * @param username - Unique username (3-20 characters)
  * @param email - Valid email address
  * @param password - Password meeting strength requirements
- * @returns User data and authentication tokens
+ * @returns User data (tokens are handled via HttpOnly cookies)
  * @throws ValidationError if inputs are invalid
  * @throws ConflictError if username/email already exists
  */
@@ -37,12 +35,6 @@ export const signup = async (
     password,
   } as SignupRequest);
 
-  // Store tokens in localStorage
-  setStoredTokens({
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
-  });
-
   return response.data;
 };
 
@@ -51,7 +43,7 @@ export const signup = async (
  *
  * @param email - User's email address
  * @param password - User's password
- * @returns User data and authentication tokens
+ * @returns User data (tokens are handled via HttpOnly cookies)
  * @throws AuthenticationError if credentials are invalid
  */
 export const login = async (email: string, password: string): Promise<AuthResponse> => {
@@ -60,53 +52,30 @@ export const login = async (email: string, password: string): Promise<AuthRespon
     password,
   } as LoginRequest);
 
-  // Store tokens in localStorage
-  setStoredTokens({
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
-  });
-
   return response.data;
 };
 
 /**
- * Refresh access token using refresh token
+ * Refresh access token using refresh token cookie
  *
  * Note: This is typically called automatically by the API client interceptor
- * when a 401 error is encountered. You rarely need to call this manually.
+ * when a 401 error is encountered.
  *
- * @param refreshToken - Valid refresh token
- * @returns New access token and refresh token
+ * @returns Success message
  * @throws AuthenticationError if refresh token is invalid or expired
  */
-export const refreshAccessToken = async (refreshToken: string): Promise<RefreshTokenResponse> => {
-  const response = await apiClient.post<RefreshTokenResponse>('/api/auth/refresh', {
-    refreshToken,
-  } as RefreshTokenRequest);
-
-  // Store new tokens
-  setStoredTokens({
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
-  });
-
+export const refreshAccessToken = async (): Promise<RefreshTokenResponse> => {
+  const response = await apiClient.post<RefreshTokenResponse>('/api/auth/refresh', {});
   return response.data;
 };
 
 /**
- * Logout and invalidate refresh token
+ * Logout and invalidate refresh token cookie
  *
- * @param refreshToken - Current refresh token to invalidate
  * @returns Success message
  */
-export const logout = async (refreshToken: string): Promise<LogoutResponse> => {
-  const response = await apiClient.post<LogoutResponse>('/api/auth/logout', {
-    refreshToken,
-  } as LogoutRequest);
-
-  // Clear stored tokens
-  clearStoredTokens();
-
+export const logout = async (): Promise<LogoutResponse> => {
+  const response = await apiClient.post<LogoutResponse>('/api/auth/logout', {});
   return response.data;
 };
 

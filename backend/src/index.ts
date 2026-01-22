@@ -1,6 +1,8 @@
 import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import mongoSanitize from 'express-mongo-sanitize';
 import { validateEnv } from './utils/validateEnv';
 import { errorHandler, rateLimiter, corsMiddleware } from './middleware';
 import authRoutes from './routes/auth';
@@ -21,6 +23,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
+app.use(mongoSanitize());
 
 // CORS middleware
 // Requirement 15.1: Configure CORS to allow requests from frontend origin

@@ -21,27 +21,27 @@ const RefreshTokenSchema = new Schema<IRefreshToken>({
   user_id: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'User ID is required']
+    required: [true, 'User ID is required'],
   },
   token: {
     type: String,
-    required: [true, 'Token is required']
+    required: [true, 'Token is required'],
   },
   expires_at: {
     type: Date,
-    required: [true, 'Expiration date is required']
+    required: [true, 'Expiration date is required'],
   },
   is_used: {
     type: Boolean,
-    default: false
+    default: false,
   },
   used_at: {
-    type: Date
+    type: Date,
   },
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // Unique index on token field for fast lookup and duplicate prevention

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getNotifications, markAsRead, markAllAsRead, Notification } from '../services/notificationApi';
+import {
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+  Notification,
+} from '../services/notificationApi';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -34,8 +39,8 @@ export default function Notifications() {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await markAsRead(notificationId);
-      setNotifications(prev =>
-        prev.map(n => n._id === notificationId ? { ...n, is_read: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, is_read: true } : n))
       );
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
@@ -45,7 +50,7 @@ export default function Notifications() {
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
       console.error('Failed to mark all as read:', error);
     }
@@ -80,7 +85,7 @@ export default function Notifications() {
     return date.toLocaleDateString();
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -127,16 +132,14 @@ export default function Notifications() {
         {/* Notifications List */}
         <div>
           {loading ? (
-            <div className="px-6 py-12 text-center text-gray-500">
-              Loading notifications...
-            </div>
+            <div className="px-6 py-12 text-center text-gray-500">Loading notifications...</div>
           ) : notifications.length === 0 ? (
             <div className="px-6 py-12 text-center text-gray-500">
               {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {notifications.map(notification => (
+              {notifications.map((notification) => (
                 <Link
                   key={notification._id}
                   to={getNotificationLink(notification)}
@@ -158,22 +161,18 @@ export default function Notifications() {
                         <p className="text-gray-900">
                           <span className="font-semibold text-blue-600">
                             {notification.sender.username}
-                          </span>
-                          {' '}
-                          {getNotificationText(notification)}
-                          {' '}
-                          <span className="text-blue-600">
-                            "{notification.post.title}"
-                          </span>
+                          </span>{' '}
+                          {getNotificationText(notification)}{' '}
+                          <span className="text-blue-600">"{notification.post.title}"</span>
                         </p>
                       </div>
-                      
+
                       {notification.comment && (
                         <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                           {notification.comment.content}
                         </p>
                       )}
-                      
+
                       <p className="mt-1 text-xs text-gray-500">
                         {formatTimeAgo(notification.created_at)}
                       </p>

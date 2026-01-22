@@ -173,7 +173,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
       return true;
     }
     if (node.replies && node.replies.length > 0) {
-      return node.replies.some(reply => containsFocusedComment(reply, targetId));
+      return node.replies.some((reply) => containsFocusedComment(reply, targetId));
     }
     return false;
   };
@@ -184,7 +184,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   useEffect(() => {
     if (focusedCommentId) {
       // Check if focused comment is in this level's comments
-      const focusedIndex = comments.findIndex(node => 
+      const focusedIndex = comments.findIndex((node) =>
         containsFocusedComment(node, focusedCommentId)
       );
 
@@ -196,9 +196,12 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
         // Auto-expand the thread containing the focused comment
         const focusedNode = comments[focusedIndex];
-        if (focusedNode && containsFocusedComment(focusedNode, focusedCommentId) && 
-            focusedNode.comment._id !== focusedCommentId) {
-          setExpandedThreads(prev => {
+        if (
+          focusedNode &&
+          containsFocusedComment(focusedNode, focusedCommentId) &&
+          focusedNode.comment._id !== focusedCommentId
+        ) {
+          setExpandedThreads((prev) => {
             const newSet = new Set(prev);
             newSet.add(focusedNode.comment._id);
             return newSet;
@@ -282,7 +285,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                   onClick={() => handleExpandThread(node.comment._id)}
                   className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
                 >
-                  Continue thread ({node.replies.length} {node.replies.length === 1 ? 'reply' : 'replies'})
+                  Continue thread ({node.replies.length}{' '}
+                  {node.replies.length === 1 ? 'reply' : 'replies'})
                 </button>
               </div>
             ) : hasReplies && (!wouldExceedMaxDepth || isThreadExpanded) ? (
@@ -317,7 +321,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
             onClick={handleLoadMore}
             className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors font-medium min-h-[44px] sm:min-h-0 flex items-center py-2 sm:py-0"
           >
-            Load {Math.min(LOAD_MORE_INCREMENT, remainingCount)} more {remainingCount === 1 ? 'comment' : 'comments'}...
+            Load {Math.min(LOAD_MORE_INCREMENT, remainingCount)} more{' '}
+            {remainingCount === 1 ? 'comment' : 'comments'}...
           </button>
         </div>
       )}

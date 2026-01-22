@@ -13,7 +13,7 @@ const PASSWORD_REGEX = {
   uppercase: /[A-Z]/,
   lowercase: /[a-z]/,
   number: /[0-9]/,
-  special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/
+  special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
 };
 
 /**
@@ -43,7 +43,7 @@ export async function comparePassword(password: string, hash: string): Promise<b
  * - Contain at least one lowercase letter
  * - Contain at least one number
  * - Contain at least one special character
- * 
+ *
  * @param password - The password to validate
  * @returns Object with isValid boolean and error message if invalid
  */
@@ -54,35 +54,35 @@ export function validatePasswordStrength(password: string): {
   if (password.length < PASSWORD_MIN_LENGTH) {
     return {
       isValid: false,
-      error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`
+      error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`,
     };
   }
 
   if (!PASSWORD_REGEX.uppercase.test(password)) {
     return {
       isValid: false,
-      error: 'Password must contain at least one uppercase letter'
+      error: 'Password must contain at least one uppercase letter',
     };
   }
 
   if (!PASSWORD_REGEX.lowercase.test(password)) {
     return {
       isValid: false,
-      error: 'Password must contain at least one lowercase letter'
+      error: 'Password must contain at least one lowercase letter',
     };
   }
 
   if (!PASSWORD_REGEX.number.test(password)) {
     return {
       isValid: false,
-      error: 'Password must contain at least one number'
+      error: 'Password must contain at least one number',
     };
   }
 
   if (!PASSWORD_REGEX.special.test(password)) {
     return {
       isValid: false,
-      error: 'Password must contain at least one special character'
+      error: 'Password must contain at least one special character',
     };
   }
 

@@ -47,7 +47,11 @@ const createTestPost = (overrides?: Partial<Post>): Post => ({
 });
 
 // Helper to create comment node
-const createCommentNode = (id: string, content: string, replies: CommentNode[] = []): CommentNode => ({
+const createCommentNode = (
+  id: string,
+  content: string,
+  replies: CommentNode[] = []
+): CommentNode => ({
   comment: {
     _id: id,
     content,
@@ -65,7 +69,7 @@ const createCommentNode = (id: string, content: string, replies: CommentNode[] =
 // Helper to render with router and search params
 const renderWithRouter = (postId: string, commentId?: string) => {
   const path = commentId ? `/posts/${postId}?commentId=${commentId}` : `/posts/${postId}`;
-  
+
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
@@ -78,10 +82,10 @@ const renderWithRouter = (postId: string, commentId?: string) => {
 describe('PostDetail - Focus Feature', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Reset scrollIntoView mock
     Element.prototype.scrollIntoView = vi.fn();
-    
+
     // Default mock for useAuth
     mockUseAuth.mockReturnValue({
       user: createTestUser(),
@@ -169,7 +173,7 @@ describe('PostDetail - Focus Feature', () => {
       // Other comments should not be highlighted
       const comment1Div = container.querySelector('#comment-comment1');
       const comment3Div = container.querySelector('#comment-comment3');
-      
+
       expect(comment1Div).not.toHaveClass('bg-yellow-50');
       expect(comment3Div).not.toHaveClass('bg-yellow-50');
     });
@@ -196,9 +200,12 @@ describe('PostDetail - Focus Feature', () => {
       });
 
       // Wait for scroll to be attempted
-      await waitFor(() => {
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+        },
+        { timeout: 500 }
+      );
     });
 
     it('should use smooth scroll behavior', async () => {
@@ -208,12 +215,15 @@ describe('PostDetail - Focus Feature', () => {
         expect(screen.getByText('Test Post')).toBeInTheDocument();
       });
 
-      await waitFor(() => {
-        expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
-          behavior: 'smooth',
-          block: 'center',
-        });
-      }, { timeout: 500 });
+      await waitFor(
+        () => {
+          expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        },
+        { timeout: 500 }
+      );
     });
   });
 
@@ -284,9 +294,7 @@ describe('PostDetail - Focus Feature', () => {
         post: createTestPost(),
         comments: [
           createCommentNode('comment1', 'Level 1', [
-            createCommentNode('comment2', 'Level 2', [
-              createCommentNode('comment3', 'Level 3'),
-            ]),
+            createCommentNode('comment2', 'Level 2', [createCommentNode('comment3', 'Level 3')]),
           ]),
         ],
       });
@@ -345,9 +353,7 @@ describe('PostDetail - Focus Feature', () => {
       // Mock post with comments that don't include the focused one
       vi.mocked(postApi.getPostById).mockResolvedValue({
         post: createTestPost(),
-        comments: [
-          createCommentNode('comment1', 'First comment'),
-        ],
+        comments: [createCommentNode('comment1', 'First comment')],
       });
 
       renderWithRouter('post1', 'nonexistent-comment');
@@ -379,7 +385,7 @@ describe('PostDetail - Focus Feature', () => {
 
     it('should handle very long commentId', async () => {
       const longId = 'a'.repeat(100);
-      
+
       renderWithRouter('post1', longId);
 
       await waitFor(() => {

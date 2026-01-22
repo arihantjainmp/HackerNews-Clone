@@ -5,15 +5,13 @@
  * Handles user login, signup, logout, and automatic token refresh.
  *
  * Requirements:
- * - 11.1: Store Access_Token and Refresh_Token on successful login
- * - 11.2: Restore authentication state from stored tokens on mount
- * - 11.6: Clear tokens and redirect on logout
+ * - 11.2: Restore authentication state on mount
+ * - 11.6: Clear state on logout
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as authApi from '../services/authApi';
-import { getStoredTokens, clearStoredTokens } from '../services/api';
 import type { User, AuthContextState } from '../types';
 
 // ============================================================================
@@ -36,32 +34,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
 
   /**
-   * Restore authentication state from stored tokens on mount
-   * Requirement 11.2: Restore auth state from stored tokens
+   * Restore authentication state on mount
+   * Attempts to fetch the current user using the access token cookie
    */
   useEffect(() => {
     const restoreAuthState = async () => {
       try {
-        const tokens = getStoredTokens();
-
-        if (!tokens) {
-          // No tokens stored - user is not authenticated
-          setIsLoading(false);
-          return;
-        }
-
-        // Tokens exist - fetch current user data
-        try {
-          const userData = await authApi.getCurrentUser();
-          setUser(userData);
-        } catch (error) {
-          // Failed to get user data - clear tokens
-          clearStoredTokens();
-          setUser(null);
-        }
+        // Fetch current user data (will succeed if valid cookie exists)
+        const userData = await authApi.getCurrentUser();
+        setUser(userData);
       } catch (error) {
-        console.error('Failed to restore auth state:', error);
-        clearStoredTokens();
+        // User is not authenticated or token expired
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -73,17 +56,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Login with email and password
-   * Requirement 11.1: Store tokens on successful login
    */
   const login = useCallback(
     async (email: string, password: string): Promise<void> => {
       const response = await authApi.login(email, password);
-
-      // Tokens are already stored by authApi.login
-      // Set user state
       setUser(response.user);
-
-      // Navigate to home page
       navigate('/');
     },
     [navigate]
@@ -91,17 +68,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Sign up with username, email, and password
-   * Requirement 11.1: Store tokens on successful signup
    */
   const signup = useCallback(
     async (username: string, email: string, password: string): Promise<void> => {
       const response = await authApi.signup(username, email, password);
-
-      // Tokens are already stored by authApi.signup
-      // Set user state
       setUser(response.user);
-
-      // Navigate to home page
       navigate('/');
     },
     [navigate]
@@ -109,27 +80,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Logout and clear authentication state
-   * Requirement 11.6: Clear tokens and redirect on logout
    */
   const logout = useCallback(async (): Promise<void> => {
     try {
-      const tokens = getStoredTokens();
-
-      if (tokens?.refreshToken) {
-        // Call logout API to invalidate refresh token on server
-        await authApi.logout(tokens.refreshToken);
-      }
+      await authApi.logout();
     } catch (error) {
-      // Log error but continue with local cleanup
       console.error('Logout API call failed:', error);
     } finally {
-      // Clear tokens from localStorage (already done by authApi.logout)
-      clearStoredTokens();
-
-      // Clear user state
       setUser(null);
-
-      // Redirect to home page
       navigate('/');
     }
   }, [navigate]);
@@ -140,17 +98,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const refreshToken = useCallback(async (): Promise<void> => {
     try {
-      const tokens = getStoredTokens();
-
-      if (!tokens?.refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      await authApi.refreshAccessToken(tokens.refreshToken);
-      // Tokens are automatically stored by authApi.refreshAccessToken
+      await authApi.refreshAccessToken();
     } catch (error) {
-      // If refresh fails, clear auth state and redirect to login
-      clearStoredTokens();
       setUser(null);
       navigate('/login');
       throw error;

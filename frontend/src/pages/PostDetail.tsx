@@ -116,13 +116,13 @@ export const PostDetail: React.FC = () => {
   useEffect(() => {
     if (commentId && !isLoading && comments.length > 0 && !scrollAttemptedRef.current) {
       scrollAttemptedRef.current = true;
-      
+
       // Wait for DOM to update
       setTimeout(() => {
         const element = document.getElementById(`comment-${commentId}`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
+
           // Remove highlight after 3 seconds
           setTimeout(() => {
             setHighlightedCommentId(null);
@@ -138,56 +138,65 @@ export const PostDetail: React.FC = () => {
    *
    * Requirement 10.1: Add comment to UI without requiring page refresh
    */
-  const handleCommentCreated = useCallback((newComment: Comment) => {
-    // Create a new comment node
-    const newNode: CommentNode = {
-      comment: newComment,
-      replies: [],
-    };
+  const handleCommentCreated = useCallback(
+    (newComment: Comment) => {
+      // Create a new comment node
+      const newNode: CommentNode = {
+        comment: newComment,
+        replies: [],
+      };
 
-    // Add to top of comment tree
-    setComments((prevComments) => [newNode, ...prevComments]);
+      // Add to top of comment tree
+      setComments((prevComments) => [newNode, ...prevComments]);
 
-    // Update post comment count
-    if (post) {
-      setPost({
-        ...post,
-        comment_count: post.comment_count + 1,
-      });
-    }
-  }, [post]);
+      // Update post comment count
+      if (post) {
+        setPost({
+          ...post,
+          comment_count: post.comment_count + 1,
+        });
+      }
+    },
+    [post]
+  );
 
   /**
    * Handle vote update on post
    */
-  const handlePostVoteUpdate = useCallback((postId: string, newPoints: number, newUserVote: number) => {
-    if (post && post._id === postId) {
-      setPost({
-        ...post,
-        points: newPoints,
-      });
-      setUserVotes((prev) => ({
-        ...prev,
-        [postId]: newUserVote,
-      }));
-    }
-  }, [post]);
+  const handlePostVoteUpdate = useCallback(
+    (postId: string, newPoints: number, newUserVote: number) => {
+      if (post && post._id === postId) {
+        setPost({
+          ...post,
+          points: newPoints,
+        });
+        setUserVotes((prev) => ({
+          ...prev,
+          [postId]: newUserVote,
+        }));
+      }
+    },
+    [post]
+  );
 
   /**
    * Handle vote update on comment
    */
-  const handleCommentVoteUpdate = useCallback((commentId: string, _newPoints: number, newUserVote: number) => {
-    // Update user vote state
-    setUserVotes((prev) => ({
-      ...prev,
-      [commentId]: newUserVote,
-    }));
+  const handleCommentVoteUpdate = useCallback(
+    (commentId: string, _newPoints: number, newUserVote: number) => {
+      // Update user vote state
+      setUserVotes((prev) => ({
+        ...prev,
+        [commentId]: newUserVote,
+      }));
 
-    // Update comment points in tree
-    // This is a simplified approach - in production, you might want to
-    // recursively update the comment tree to reflect the new points
-    // For now, the CommentItem component will handle its own optimistic updates
-  }, []);
+      // Update comment points in tree
+      // This is a simplified approach - in production, you might want to
+      // recursively update the comment tree to reflect the new points
+      // For now, the CommentItem component will handle its own optimistic updates
+    },
+    []
+  );
 
   /**
    * Handle reply button click
@@ -199,46 +208,49 @@ export const PostDetail: React.FC = () => {
   /**
    * Handle reply created
    */
-  const handleReplyCreated = useCallback((newComment: Comment) => {
-    // Recursively update comment tree to add the new reply
-    const addReplyToTree = (nodes: CommentNode[]): CommentNode[] => {
-      return nodes.map((node) => {
-        if (node.comment._id === newComment.parent_id) {
-          // Found the parent - add reply
-          return {
-            ...node,
-            replies: [
-              {
-                comment: newComment,
-                replies: [],
-              },
-              ...node.replies,
-            ],
-          };
-        } else if (node.replies.length > 0) {
-          // Recursively search in replies
-          return {
-            ...node,
-            replies: addReplyToTree(node.replies),
-          };
-        }
-        return node;
-      });
-    };
+  const handleReplyCreated = useCallback(
+    (newComment: Comment) => {
+      // Recursively update comment tree to add the new reply
+      const addReplyToTree = (nodes: CommentNode[]): CommentNode[] => {
+        return nodes.map((node) => {
+          if (node.comment._id === newComment.parent_id) {
+            // Found the parent - add reply
+            return {
+              ...node,
+              replies: [
+                {
+                  comment: newComment,
+                  replies: [],
+                },
+                ...node.replies,
+              ],
+            };
+          } else if (node.replies.length > 0) {
+            // Recursively search in replies
+            return {
+              ...node,
+              replies: addReplyToTree(node.replies),
+            };
+          }
+          return node;
+        });
+      };
 
-    setComments((prevComments) => addReplyToTree(prevComments));
+      setComments((prevComments) => addReplyToTree(prevComments));
 
-    // Update post comment count
-    if (post) {
-      setPost({
-        ...post,
-        comment_count: post.comment_count + 1,
-      });
-    }
+      // Update post comment count
+      if (post) {
+        setPost({
+          ...post,
+          comment_count: post.comment_count + 1,
+        });
+      }
 
-    // Close reply form
-    setReplyingTo(null);
-  }, [post]);
+      // Close reply form
+      setReplyingTo(null);
+    },
+    [post]
+  );
 
   /**
    * Handle reply cancel
@@ -297,80 +309,74 @@ export const PostDetail: React.FC = () => {
 
   return (
     <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-4xl">
-        {/* Post Details */}
-        <div className="bg-white rounded-lg shadow-sm mb-4 sm:mb-6">
-          <PostItem
-            post={post}
-            userVote={userVotes[post._id]}
-            onVoteUpdate={handlePostVoteUpdate}
-          />
+      {/* Post Details */}
+      <div className="bg-white rounded-lg shadow-sm mb-4 sm:mb-6">
+        <PostItem post={post} userVote={userVotes[post._id]} onVoteUpdate={handlePostVoteUpdate} />
 
-          {/* Text Content for Text Posts */}
-          {post.type === 'text' && post.text && (
-            <div className="flex gap-2 sm:gap-3 px-3 sm:px-4 pb-4">
-              {/* Spacer to align with vote controls */}
-              <div className="min-w-[44px] sm:min-w-[48px]"></div>
-              
-              {/* Text content aligned with post title */}
-              <div className="flex-1 min-w-0">
-                <div className="prose max-w-none text-sm sm:text-base text-gray-700 whitespace-pre-wrap break-words">
-                  {post.text}
-                </div>
+        {/* Text Content for Text Posts */}
+        {post.type === 'text' && post.text && (
+          <div className="flex gap-2 sm:gap-3 px-3 sm:px-4 pb-4">
+            {/* Spacer to align with vote controls */}
+            <div className="min-w-[44px] sm:min-w-[48px]"></div>
+
+            {/* Text content aligned with post title */}
+            <div className="flex-1 min-w-0">
+              <div className="prose max-w-none text-sm sm:text-base text-gray-700 whitespace-pre-wrap break-words">
+                {post.text}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Comment Form for Top-Level Comments */}
-        {isAuthenticated ? (
-          <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Add a comment</h3>
-            <CommentForm
-              postId={post._id}
-              onCommentCreated={handleCommentCreated}
-              placeholder="What are your thoughts?"
-            />
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-4 sm:mb-6 text-center">
-            <p className="text-sm sm:text-base text-gray-600 mb-3">
-              Please log in to comment
-            </p>
-            <button
-              onClick={() => navigate('/login')}
-              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm font-medium min-h-[44px]"
-            >
-              Log In
-            </button>
           </div>
         )}
+      </div>
 
-        {/* Comments Section */}
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-            Comments ({post.comment_count})
-          </h3>
-
-          {comments.length > 0 ? (
-            <CommentThread
-              comments={comments}
-              depth={0}
-              userVotes={userVotes}
-              onReply={handleReply}
-              onVoteUpdate={handleCommentVoteUpdate}
-              replyingTo={replyingTo}
-              onReplyCreated={handleReplyCreated}
-              onReplyCancel={handleReplyCancel}
-              focusedCommentId={commentId}
-              highlightedCommentId={highlightedCommentId}
-              postId={id}
-            />
-          ) : (
-            <p className="text-sm sm:text-base text-gray-500 text-center py-8">
-              No comments yet. Be the first to comment!
-            </p>
-          )}
+      {/* Comment Form for Top-Level Comments */}
+      {isAuthenticated ? (
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Add a comment</h3>
+          <CommentForm
+            postId={post._id}
+            onCommentCreated={handleCommentCreated}
+            placeholder="What are your thoughts?"
+          />
         </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-4 sm:mb-6 text-center">
+          <p className="text-sm sm:text-base text-gray-600 mb-3">Please log in to comment</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors text-sm font-medium min-h-[44px]"
+          >
+            Log In
+          </button>
+        </div>
+      )}
+
+      {/* Comments Section */}
+      <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+          Comments ({post.comment_count})
+        </h3>
+
+        {comments.length > 0 ? (
+          <CommentThread
+            comments={comments}
+            depth={0}
+            userVotes={userVotes}
+            onReply={handleReply}
+            onVoteUpdate={handleCommentVoteUpdate}
+            replyingTo={replyingTo}
+            onReplyCreated={handleReplyCreated}
+            onReplyCancel={handleReplyCancel}
+            focusedCommentId={commentId}
+            highlightedCommentId={highlightedCommentId}
+            postId={id}
+          />
+        ) : (
+          <p className="text-sm sm:text-base text-gray-500 text-center py-8">
+            No comments yet. Be the first to comment!
+          </p>
+        )}
+      </div>
     </div>
   );
 };

@@ -3,12 +3,7 @@
  * Throws an error if any required variable is missing
  */
 export function validateEnv(): void {
-  const requiredEnvVars = [
-    'JWT_SECRET',
-    'REFRESH_TOKEN_SECRET',
-    'MONGODB_URI',
-    'PORT',
-  ];
+  const requiredEnvVars = ['JWT_SECRET', 'REFRESH_TOKEN_SECRET', 'MONGODB_URI', 'PORT'];
 
   const missingVars: string[] = [];
 

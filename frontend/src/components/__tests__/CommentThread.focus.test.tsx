@@ -56,7 +56,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('CommentThread - Focus Feature', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default mock for useAuth
     mockUseAuth.mockReturnValue({
       user: createTestUser(),
@@ -94,9 +94,7 @@ describe('CommentThread - Focus Feature', () => {
 
       const nodes = [createCommentNode(comment, [createCommentNode(reply)])];
 
-      renderWithRouter(
-        <CommentThread comments={nodes} focusedCommentId="reply1" />
-      );
+      renderWithRouter(<CommentThread comments={nodes} focusedCommentId="reply1" />);
 
       // Both comments should be rendered
       expect(screen.getByText('Parent comment')).toBeInTheDocument();
@@ -141,7 +139,7 @@ describe('CommentThread - Focus Feature', () => {
       // Only comment1 should be highlighted
       const comment1Div = container.querySelector('#comment-comment1');
       const comment2Div = container.querySelector('#comment-comment2');
-      
+
       expect(comment1Div).toHaveClass('bg-yellow-50');
       expect(comment2Div).not.toHaveClass('bg-yellow-50');
     });
@@ -152,9 +150,7 @@ describe('CommentThread - Focus Feature', () => {
       const comment = createTestComment();
       const nodes = [createCommentNode(comment)];
 
-      const { container } = renderWithRouter(
-        <CommentThread comments={nodes} postId="post123" />
-      );
+      const { container } = renderWithRouter(<CommentThread comments={nodes} postId="post123" />);
 
       expect(container).toBeInTheDocument();
     });
@@ -163,9 +159,7 @@ describe('CommentThread - Focus Feature', () => {
       const comment = createTestComment();
       const nodes = [createCommentNode(comment)];
 
-      renderWithRouter(
-        <CommentThread comments={nodes} postId="post123" />
-      );
+      renderWithRouter(<CommentThread comments={nodes} postId="post123" />);
 
       // Permalink button should be visible
       expect(screen.getByText('permalink')).toBeInTheDocument();
@@ -184,9 +178,7 @@ describe('CommentThread - Focus Feature', () => {
 
       const nodes = [createCommentNode(comment, [createCommentNode(reply)])];
 
-      renderWithRouter(
-        <CommentThread comments={nodes} postId="post123" />
-      );
+      renderWithRouter(<CommentThread comments={nodes} postId="post123" />);
 
       // Both comments should have permalink buttons
       const permalinkButtons = screen.getAllByText('permalink');

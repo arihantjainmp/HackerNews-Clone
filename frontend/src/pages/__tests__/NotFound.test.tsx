@@ -41,7 +41,9 @@ describe('NotFound Component', () => {
 
   it('should render descriptive error message', () => {
     renderNotFound();
-    expect(screen.getByText(/Sorry, we couldn't find the page you're looking for/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Sorry, we couldn't find the page you're looking for/i)
+    ).toBeInTheDocument();
   });
 
   it('should render link to home page', () => {

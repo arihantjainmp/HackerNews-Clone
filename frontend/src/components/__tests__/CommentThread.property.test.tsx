@@ -239,20 +239,19 @@ const deletedCommentArbitrary = commentArbitrary.map((c) => ({
 /**
  * Generate comment tree with some deleted comments
  */
-const commentTreeWithDeletedArbitrary = fc
-  .array(
-    fc.record({
-      comment: fc.oneof(commentArbitrary, deletedCommentArbitrary),
-      replies: fc.array(
-        fc.record({
-          comment: fc.oneof(commentArbitrary, deletedCommentArbitrary),
-          replies: fc.constant([] as CommentNode[]),
-        }),
-        { minLength: 0, maxLength: 3 }
-      ),
-    }),
-    { minLength: 1, maxLength: 5 }
-  );
+const commentTreeWithDeletedArbitrary = fc.array(
+  fc.record({
+    comment: fc.oneof(commentArbitrary, deletedCommentArbitrary),
+    replies: fc.array(
+      fc.record({
+        comment: fc.oneof(commentArbitrary, deletedCommentArbitrary),
+        replies: fc.constant([] as CommentNode[]),
+      }),
+      { minLength: 0, maxLength: 3 }
+    ),
+  }),
+  { minLength: 1, maxLength: 5 }
+);
 
 // ============================================================================
 // Property Tests
@@ -588,7 +587,7 @@ describe('CommentThread Property Tests', () => {
             // that might appear elsewhere in the UI (like "0" in points)
             for (const data of commentData) {
               const componentText = container.textContent || '';
-              
+
               // The original content should not appear in the rendered output
               // Since we're using longer strings (10+ chars), we can be confident
               // that if they appear, it's the actual content, not a coincidence

@@ -46,10 +46,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex justify-between items-center h-14">
             {/* Brand */}
             <div className="flex items-center">
-              <Link
-                to="/"
-                className="text-white hover:text-orange-100 transition-colors"
-              >
+              <Link to="/" className="text-white hover:text-orange-100 transition-colors">
                 <span className="font-bold text-lg hidden sm:inline">Hacker News Clone</span>
                 <span className="font-bold text-lg sm:hidden">HN</span>
               </Link>
@@ -80,9 +77,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               ) : isAuthenticated ? (
                 <>
                   <NotificationBell />
-                  <span className="text-white text-sm font-medium">
-                    {user?.username || 'User'}
-                  </span>
+                  <span className="text-white text-sm font-medium">{user?.username || 'User'}</span>
                   <button
                     onClick={handleLogout}
                     className="px-4 py-2 bg-white text-orange-500 rounded hover:bg-orange-50 transition-colors font-medium text-sm"
@@ -115,12 +110,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -129,12 +119,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   />
                 </svg>
               ) : (
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -206,9 +191,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">{children}</main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-12">

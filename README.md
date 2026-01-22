@@ -58,6 +58,9 @@ The application emphasizes production-ready code quality with:
 - ✅ Upvote and downvote comments
 
 ### Security & Performance
+- ✅ **HttpOnly Cookie Authentication**: Mitigates XSS by storing JWTs in secure cookies
+- ✅ **NoSQL Injection Protection**: Sanitizes inputs to prevent database attacks
+- ✅ **Optimized "Best" Sorting**: Uses MongoDB Aggregation Pipeline for efficient dynamic ranking
 - ✅ Input validation and sanitization (XSS prevention)
 - ✅ Rate limiting (100 requests per 15 minutes)
 - ✅ CORS configuration
@@ -73,7 +76,8 @@ The application emphasizes production-ready code quality with:
 | **Node.js + Express.js** | REST API Server | Non-blocking I/O ideal for API servers, mature ecosystem |
 | **TypeScript** | Type Safety | Reduces runtime errors, improves maintainability |
 | **MongoDB + Mongoose** | Database & ODM | Document model naturally represents nested comment trees |
-| **JWT** | Authentication | Stateless authentication with access/refresh token pattern |
+| **JWT + Cookies** | Authentication | HttpOnly cookies prevent XSS token theft |
+| **express-mongo-sanitize**| Security | Prevents NoSQL Injection attacks |
 | **bcrypt** | Password Hashing | Industry-standard password hashing with salt |
 | **Joi** | Input Validation | Schema-based validation with detailed error messages |
 | **express-rate-limit** | Rate Limiting | Protects against abuse and DoS attacks |
@@ -546,14 +550,12 @@ Register a new user account.
     "username": "johndoe",
     "email": "john@example.com",
     "created_at": "2024-01-01T00:00:00.000Z"
-  },
-  "accessToken": "eyJhbGc...",
-  "refreshToken": "eyJhbGc..."
+  }
 }
 ```
 
 #### POST `/api/auth/login`
-Authenticate and receive tokens.
+Authenticate and receive cookies.
 
 **Request Body:**
 ```json
@@ -566,31 +568,21 @@ Authenticate and receive tokens.
 **Response:** `200 OK` (same structure as signup)
 
 #### POST `/api/auth/refresh`
-Get a new access token using refresh token.
+Get a new access token via HttpOnly cookies.
 
-**Request Body:**
-```json
-{
-  "refreshToken": "eyJhbGc..."
-}
-```
+**Request Body:** `{}`
 
 **Response:** `200 OK`
 ```json
 {
-  "accessToken": "eyJhbGc..."
+  "message": "Token refreshed"
 }
 ```
 
 #### POST `/api/auth/logout`
-Invalidate refresh token.
+Invalidate cookies and refresh token.
 
-**Request Body:**
-```json
-{
-  "refreshToken": "eyJhbGc..."
-}
-```
+**Request Body:** `{}`
 
 **Response:** `200 OK`
 ```json
@@ -903,6 +895,12 @@ This project was developed with assistance from AI tools to accelerate developme
 - **Test Generation**: Created unit tests, integration tests, and property-based tests with fast-check
 - **Code Review**: Received suggestions for improvements in error handling, validation, and security
 - **Documentation**: Assisted in writing inline code comments and this README
+
+### Gemini AI Agent (CLI)
+- **Security Hardening**: Transitioned the entire authentication system from `localStorage` to **HttpOnly Cookies** to mitigate XSS risks.
+- **Vulnerability Mitigation**: Implemented **NoSQL Injection protection** across the backend.
+- **Performance Optimization**: Refactored the Hacker News "Best" sorting algorithm to use **MongoDB Aggregation Pipelines**, moving calculation from memory to the database layer.
+- **Full-Stack Refactoring**: Harmonized frontend services and state management to support secure cookie-based auth.
 
 ### Development Approach
 The project followed a **spec-driven development methodology**:

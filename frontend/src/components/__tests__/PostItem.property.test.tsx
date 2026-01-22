@@ -323,11 +323,14 @@ describe('PostItem Property Tests', () => {
           // doesn't contain a domain pattern. We need to be more specific to avoid
           // matching usernames that might contain dots.
           const componentText = container.textContent || '';
-          
+
           // Check that there's no URL hostname pattern (must have at least one subdomain or common TLD)
           // This is more specific than the previous regex to avoid false positives with usernames
-          const hasDomainPattern = /\((?:[a-z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|uk|de|fr|jp|cn|au|ca|in|ru|br|mx|es|it|nl|se|no|dk|fi|pl|be|ch|at|cz|gr|pt|ie|nz|sg|hk|kr|tw|th|my|id|ph|vn|za|ar|cl|pe|ve|co\.uk|co\.jp|co\.nz|co\.za|com\.au|com\.br|com\.mx|com\.ar|com\.co|com\.pe|com\.ve)\)/i.test(componentText);
-          
+          const hasDomainPattern =
+            /\((?:[a-z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|uk|de|fr|jp|cn|au|ca|in|ru|br|mx|es|it|nl|se|no|dk|fi|pl|be|ch|at|cz|gr|pt|ie|nz|sg|hk|kr|tw|th|my|id|ph|vn|za|ar|cl|pe|ve|co\.uk|co\.jp|co\.nz|co\.za|com\.au|com\.br|com\.mx|com\.ar|com\.co|com\.pe|com\.ve)\)/i.test(
+              componentText
+            );
+
           expect(hasDomainPattern).toBe(false);
         }),
         { numRuns: 5 }
