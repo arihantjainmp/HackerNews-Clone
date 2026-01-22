@@ -2,7 +2,61 @@
 
 Base URL: `http://localhost:5000/api`
 
-## POST /auth/signup
+## Health Check Endpoints
+
+### GET /health
+Comprehensive health check that verifies database connectivity, memory usage, and system uptime.
+
+Response (200 OK when healthy, 503 Service Unavailable when unhealthy):
+```json
+{
+  "status": "healthy" | "degraded" | "unhealthy",
+  "timestamp": "2026-01-23T02:00:00.000Z",
+  "uptime": 3600.5,
+  "checks": {
+    "database": {
+      "status": "up" | "down",
+      "responseTime": 5,
+      "error": "optional error message"
+    },
+    "memory": {
+      "status": "ok" | "warning" | "critical",
+      "usage": {
+        "heapUsed": 150,
+        "heapTotal": 200,
+        "external": 10,
+        "rss": 250
+      },
+      "percentage": 75
+    }
+  }
+}
+```
+
+### GET /ready
+Kubernetes readiness probe - returns 200 only when service is ready to accept traffic.
+
+Response (200 OK when ready, 503 Service Unavailable when not ready):
+```json
+{
+  "status": "ready"
+}
+```
+
+### GET /live
+Kubernetes liveness probe - returns 200 if service is alive.
+
+Response (200 OK):
+```json
+{
+  "status": "alive",
+  "uptime": 3600.5
+}
+```
+
+## Authentication Endpoints
+
+### POST /auth/signup
 Request body:
 - username: string (required, 3-20 chars)
 - email: string (required, valid email)
@@ -18,7 +72,7 @@ Response:
   }
 }
 
-## POST /auth/login
+### POST /auth/login
 Request body:
 - email: string (required)
 - password: string (required)
@@ -33,7 +87,7 @@ Response:
   }
 }
 
-## POST /auth/logout
+### POST /auth/logout
 Request body:
 - (none)
 
@@ -42,7 +96,7 @@ Response:
   message: string
 }
 
-## GET /auth/me
+### GET /auth/me
 Request params:
 - (none)
 
@@ -56,7 +110,9 @@ Response:
   }
 }
 
-## GET /posts
+## Post Endpoints
+
+### GET /posts
 Request params:
 - page: integer (optional, default: 1)
 - limit: integer (optional, default: 25)
@@ -86,7 +142,7 @@ Response:
   totalPages: integer
 }
 
-## POST /posts
+### POST /posts
 Request body:
 - title: string (required)
 - url: string (optional)
@@ -110,7 +166,7 @@ Response:
   }
 }
 
-## GET /posts/:id
+### GET /posts/:id
 Request params:
 - id: string (required)
 
@@ -145,7 +201,7 @@ Response:
   }]
 }
 
-## POST /posts/:id/vote
+### POST /posts/:id/vote
 Request body:
 - direction: integer (1 for upvote, -1 for downvote)
 
@@ -155,7 +211,9 @@ Response:
   userVote: integer
 }
 
-## POST /posts/:postId/comments
+## Comment Endpoints
+
+### POST /posts/:postId/comments
 Request body:
 - content: string (required)
 
@@ -174,7 +232,7 @@ Response:
   }
 }
 
-## POST /comments/:commentId/replies
+### POST /comments/:commentId/replies
 Request body:
 - content: string (required)
 
@@ -194,7 +252,7 @@ Response:
   }
 }
 
-## POST /comments/:id/vote
+### POST /comments/:id/vote
 Request body:
 - direction: integer (1 for upvote, -1 for downvote)
 
@@ -204,7 +262,7 @@ Response:
   userVote: integer
 }
 
-## DELETE /comments/:id
+### DELETE /comments/:id
 Request params:
 - id: string (required)
 
@@ -213,7 +271,9 @@ Response:
   message: string
 }
 
-## GET /users/:username
+## User Endpoints
+
+### GET /users/:username
 Request params:
 - username: string (required)
 
@@ -228,7 +288,9 @@ Response:
   comments: array
 }
 
-## GET /notifications
+## Notification Endpoints
+
+### GET /notifications
 Request params:
 - unreadOnly: boolean (optional)
 

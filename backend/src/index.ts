@@ -12,6 +12,7 @@ import postRoutes from './routes/post';
 import commentRoutes from './routes/comment';
 import userRoutes from './routes/userRoutes';
 import notificationRoutes from './routes/notification';
+import healthRoutes from './routes/health';
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,9 @@ app.use(corsMiddleware);
 // Requirement 14.3: Apply rate limiting to all API endpoints
 app.use(rateLimiter);
 
+// Health check routes (before rate limiting for monitoring)
+app.use('/', healthRoutes);
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', voteRoutes);
@@ -49,11 +53,6 @@ app.use('/api/posts', postRoutes);
 app.use('/api', commentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', notificationRoutes);
-
-// Health check endpoint
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
 
 // Error handling middleware (must be last)
 // Requirement 13.7: Use error handling middleware as final middleware
