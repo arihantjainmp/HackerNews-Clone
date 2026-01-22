@@ -155,10 +155,29 @@ const Signup: React.FC = () => {
       // This will store tokens and redirect to home page on success
       await signup(username.trim(), email.trim(), password);
     } catch (error: any) {
-      // Display error message from API
-      const errorMessage =
-        error.response?.data?.error || error.message || 'Signup failed. Please try again.';
-      setServerError(errorMessage);
+      const responseData = error.response?.data;
+
+      // Handle validation errors array from backend
+      if (responseData?.errors && Array.isArray(responseData.errors)) {
+        const newErrors: ValidationErrors = {};
+        responseData.errors.forEach((err: { field: string; message: string }) => {
+          if (err.field === 'username') newErrors.username = err.message;
+          if (err.field === 'email') newErrors.email = err.message;
+          if (err.field === 'password') newErrors.password = err.message;
+        });
+        setErrors(newErrors);
+
+        // If we parsed field errors, we don't need a generic server error
+        // unless no known fields were matched
+        if (Object.keys(newErrors).length === 0) {
+          setServerError('Validation failed. Please check your inputs.');
+        }
+      } else {
+        // Fallback for generic errors
+        const errorMessage =
+          responseData?.error || error.message || 'Signup failed. Please try again.';
+        setServerError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }

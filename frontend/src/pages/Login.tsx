@@ -84,10 +84,26 @@ const Login: React.FC = () => {
       // This will store tokens and redirect to home page on success
       await login(email, password);
     } catch (error: any) {
-      // Display error message from API
-      const errorMessage =
-        error.response?.data?.error || error.message || 'Login failed. Please try again.';
-      setServerError(errorMessage);
+      const responseData = error.response?.data;
+
+      // Handle validation errors array from backend
+      if (responseData?.errors && Array.isArray(responseData.errors)) {
+        const newErrors: { email?: string; password?: string } = {};
+        responseData.errors.forEach((err: { field: string; message: string }) => {
+          if (err.field === 'email') newErrors.email = err.message;
+          if (err.field === 'password') newErrors.password = err.message;
+        });
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+          setServerError('Validation failed. Please check your inputs.');
+        }
+      } else {
+        // Display error message from API
+        const errorMessage =
+          responseData?.error || error.message || 'Login failed. Please try again.';
+        setServerError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
